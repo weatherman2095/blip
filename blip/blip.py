@@ -19,10 +19,10 @@ Keyword Arguments:
     device_group.add_argument('--pcap-input', '-p', type=str, metavar="CAPFILE", default=None, help="PCAP file from which to read input")
 
     argparser.add_argument('--filter','-f', type=str, default=None, help="Berkeley Packet Filter string to optionally apply on all sniffing")
-    argparser.add_argument('--output','-o', nargs='?', #FIXME I always output to stdout
+    argparser.add_argument('--output','-o',
                            type=argparse.FileType('wb'),
                            metavar='FILE', help="Write binary output to FILE instead of stdout",
-                           default=stdout.buffer, const=stdout.buffer)
+                           default=stdout.buffer)
     argparser.add_argument('--limit', '-l', type=int, metavar="NUM", help="Only capture NUM packets", default=0)
     argparser.add_argument('--version', '-v', action='version', version="{} {}".format('%(prog)s', __version__))
 
@@ -64,9 +64,7 @@ def capture_traffic(pargs):
 
 def main(args=None):
     pargs = parse_args(args)
-    pargs.output = stdout.buffer
     capture_traffic(pargs)
-
 
 if __name__ == '__main__':
     main()
