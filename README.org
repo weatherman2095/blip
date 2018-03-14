@@ -1,2 +1,95 @@
 * BLIP
 Bid-request Capture Utility (or "Bid Logging In the Pipe" for backronym lovers)
+
+** Description
+
+*blip* is a simple python utility for capturing network traffic from a
+provided device or [[http://www.tcpdump.org/pcap/pcap.html][pcap]] file and extract wanted [[https://github.com/google/protobuf][protobuf]] or [[http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf][JSON]]
+payloads for the sake of replaying them later with another utility.
+
+It uses [[https://github.com/secdev/scapy][Scapy]] a powerful packet manipulation library for most
+network-specific functions.
+
+** Setup Requirements
+
+*** Basic Setup
+
+#+BEGIN_SRC sh
+cd "$REPOPATH" # Where $REPOPATH is the path to the blip repository.
+pip3 install -r requirements.txt
+#+END_SRC
+
+It is *necessary* to run Scapy with root priviledges or a user with
+the appropriate groups and permissions. These settings may vary
+depending on the UNIX-like system you use, therefore it is recommended
+to simply request ~sudo~ permissions from your local system
+administrator.
+
+*** Recommended Setup
+
+It is recommended to install the application inside a virtualenv in
+order to provide additional decoupling from the rest of possibly
+installed dependencies on the system.
+
+#+BEGIN_SRC sh
+virtualenv -p python3 "$DIRNAME" # Where $DIRNAME is the desired virtenv path.
+cd "$DIRNAME"
+source bin/activate
+cp -r "$REPOPATH" "$DIRNAME" # Where $REPOPATH is the path of your repository.
+# Cloning the git repository locally instead of copying it is also an option.
+cd "$REPONAME" # Where $REPONAME is the name of the directory you copied.
+pip3 install -r requirements.txt
+#+END_SRC
+This would prepare a clean environment for running ~blip~ without
+interference from any other possible libraries installed on the
+system. This would prevent issues which may be brought about by
+different older or newer versions being installed on the machine.
+
+To return shell variables to their original state, one simply has to
+run ~deactivate~.
+
+** Examples
+
+/Warning: Each example assumes your shell is within the repository
+directory./
+
+Note: ~sudo~ is used for convenience's sake, as an account with
+administrative or root permissions would work just as well.
+
+*Example 1*
+#+BEGIN_SRC sh
+sudo ./blip/blip/blip.py -d wlp4s0 | pv > /tmp/output.bin
+#+END_SRC
+This command would capture packets from wlp4s0 (a wireless device),
+pipe the output through pv for stderr metric measurements display and
+write the extracted data to ~/tmp/output.bin~.
+
+*Example 2*
+#+BEGIN_SRC sh
+sudo ./blip/blip.py -d wlp4s0 -o /tmp/output.bin
+#+END_SRC
+This command would capture packets from wlp4s0 (a wireless device) and
+write the extracted data to ~/tmp/output.bin~.
+
+*Example 3*
+#+BEGIN_SRC sh
+sudo ./blip/blip.py -d wlp4s0 -o /tmp/output.bin -f "dst port 80"
+#+END_SRC
+This command would capture packets with a destination equal to port
+80, and write the extracted data to ~/tmp/output.bin~. Any valid [[https://biot.com/capstats/bpf.html][BPF
+syntax]] expression should be compatible with the program.
+
+*Example 4*
+#+BEGIN_SRC sh
+sudo ./blip/blip.py -d wlp4s0 -o /tmp/output.bin -l 3
+#+END_SRC
+This command would capture 3 packets from wlp4s0 (a wireless device)
+and write the extracted data to ~/tmp/output.bin~. A limit of zero
+means unlimited capture, which is the default.
+
+*Example 5*
+#+BEGIN_SRC sh
+sudo ./blip/blip.py -p /tmp/input.pcap -o /tmp/output.bin
+#+END_SRC
+This command would read packets from the file ~/tmp/input.pcap~ and
+write the extracted data to ~/tmp/output.bin~.
