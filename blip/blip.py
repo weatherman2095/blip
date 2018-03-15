@@ -6,6 +6,13 @@ import scapy.all as s
 import pkg_resources  # part of setuptools
 import argparse
 
+try: # Original comments may or may not be accurate depending on setuptools environment
+    # This import works from the project directory
+    import scapy_http.http
+except ImportError:
+    # If you installed this package via pip, you just need to execute this
+    from scapy.layers import http
+
 __version__ = pkg_resources.require("blip")[0].version
 
 def parse_args(args=None):

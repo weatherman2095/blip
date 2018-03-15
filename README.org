@@ -16,7 +16,7 @@ network-specific functions.
 
 #+BEGIN_SRC sh
 cd "$REPOPATH" # Where $REPOPATH is the path to the blip repository.
-pip3 install git+https://github.com/invernizzi/scapy-http@df0caa6f38a88e45f64dff0bb3cdfaceee270ae2 -r blip/requirements.txt
+python3 "$REPONAME"/setup.py install
 #+END_SRC
 
 It is *necessary* to run Scapy with root priviledges or a user with
@@ -38,7 +38,7 @@ source bin/activate
 cp -r "$REPOPATH" "$DIRNAME" # Where $REPOPATH is the path of your repository.
 # Cloning the git repository locally instead of copying it is also an option.
 cd "$REPONAME" # Where $REPONAME is the name of the directory you copied.
-pip3 install git+https://github.com/invernizzi/scapy-http@df0caa6f38a88e45f64dff0bb3cdfaceee270ae2 -r blip/requirements.txt
+python3 "$REPONAME"/setup.py install
 #+END_SRC
 This would prepare a clean environment for running ~blip~ without
 interference from any other possible libraries installed on the
@@ -53,6 +53,19 @@ run ~deactivate~.
 the current repository version (which is required for python3 compatibility) has not been uploaded
  to <a href="https://pypi.python.org/pypi">PyPI</a> yet.</p>
 #+END_HTML
+
+*** pip3 Installation
+
+It is also possible to install the project only via pip3, though this
+method is deprecated due to the availability of better tooling within
+[[http://setuptools.readthedocs.io/en/latest/index.html][setuptools]].
+
+#+BEGIN_SRC sh
+pip3 install git+https://github.com/invernizzi/scapy-http@df0caa6f38a88e45f64dff0bb3cdfaceee270ae2 -r blip/requirements.txt
+#+END_SRC
+
+This would result in the same behavior as the ~setup.py~ method though
+relying on a more verbose command.
 
 ** Examples
 
