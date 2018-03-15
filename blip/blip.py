@@ -3,9 +3,10 @@
 from sys import argv, stdout, stderr
 from functools import partial
 import scapy.all as s
+import pkg_resources  # part of setuptools
 import argparse
 
-__version__ = "1.0.0"
+__version__ = pkg_resources.require("blip")[0].version
 
 def parse_args(args=None):
     """Parse arguments parsed to the function and return parsed argparse object
