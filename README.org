@@ -16,7 +16,7 @@ network-specific functions.
 
 #+BEGIN_SRC sh
 cd "$REPOPATH" # Where $REPOPATH is the path to the blip repository.
-pip3 install -r requirements.txt
+pip3 install git+https://github.com/invernizzi/scapy-http@df0caa6f38a88e45f64dff0bb3cdfaceee270ae2 -r blip/requirements.txt
 #+END_SRC
 
 It is *necessary* to run Scapy with root priviledges or a user with
@@ -38,7 +38,7 @@ source bin/activate
 cp -r "$REPOPATH" "$DIRNAME" # Where $REPOPATH is the path of your repository.
 # Cloning the git repository locally instead of copying it is also an option.
 cd "$REPONAME" # Where $REPONAME is the name of the directory you copied.
-pip3 install -r requirements.txt
+pip3 install git+https://github.com/invernizzi/scapy-http@df0caa6f38a88e45f64dff0bb3cdfaceee270ae2 -r blip/requirements.txt
 #+END_SRC
 This would prepare a clean environment for running ~blip~ without
 interference from any other possible libraries installed on the
@@ -47,6 +47,12 @@ different older or newer versions being installed on the machine.
 
 To return shell variables to their original state, one simply has to
 run ~deactivate~.
+
+#+BEGIN_HTML
+<p style="font-style: italic;">Note: scapy-http requires a particular method of installation because
+the current repository version (which is required for python3 compatibility) has not been uploaded
+ to <a href="https://pypi.python.org/pypi">PyPI</a> yet.</p>
+#+END_HTML
 
 ** Examples
 
