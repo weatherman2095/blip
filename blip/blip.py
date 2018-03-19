@@ -2,16 +2,17 @@
 
 from sys import argv, stdout, stderr
 from functools import partial
-import scapy.all as s
+
 import pkg_resources  # part of setuptools
 import argparse
 
 try: # Original comments may or may not be accurate depending on setuptools environment
     # This import works from the project directory
-    import scapy_http.http
+    from  scapy_http.http import HTTP, HTTPRequest, HTTPResponse
 except ImportError:
     # If you installed this package via pip, you just need to execute this
     from scapy.layers import http
+import scapy.all as s
 
 __version__ = pkg_resources.require("blip")[0].version
 
@@ -54,11 +55,28 @@ def capture_callback(destination, content):
     content -- Scapy capture object (likely a packet)
 
     """
+
     destination.write(bytes(content.payload))
 
-def http_filter(packet):
-    """Checks if the passed packet contains http content."""
-    return True #TODO Actually make this filter for http content
+def extract_http_req(packet):
+    """Attempts to extracts an HTTP payload from a raw packet and returns it"""
+    http = HTTP()
+    ll_pkt = packet.last_layer()
+    http.dissect(ll_pkt.raw_packet_cache) # Setting the object from the input
+    return http
+
+def http_req_filter(packet):
+    """Checks if the passed packet contains HTTPRequest content
+
+    Keyword Arguments:
+
+    packet -- Any packet object
+    """
+
+    last_layer = packet.lastlayer()
+    http = HTTP()
+    res_class = http.guess_payload_class(last_layer.raw_packet_cache)
+    return res_class == HTTPRequest
 
 def capture_traffic(pargs):
     is_dev = pargs.device is not None
@@ -66,9 +84,9 @@ def capture_traffic(pargs):
         callback = partial(capture_callback, out) # This may or may not lead to more context-switching than closures depending on internal implementation.
 
         if is_dev:
-            s.sniff(prn=callback, count=pargs.limit, iface=pargs.device, lfilter=http_filter, filter=pargs.filter)
+            s.sniff(prn=callback, count=pargs.limit, iface=pargs.device, lfilter=http_req_filter, filter=pargs.filter)
         else:
-            s.sniff(prn=callback, count=pargs.limit, offline=pargs.pcap_input, lfilter=http_filter, filter=pargs.filter)
+            s.sniff(prn=callback, count=pargs.limit, offline=pargs.pcap_input, lfilter=http_req_filter, filter=pargs.filter)
 
 def main(args=None):
     pargs = parse_args(args)
