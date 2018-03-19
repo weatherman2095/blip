@@ -13,7 +13,7 @@ packet's last layer.
 The dissection code will only properly work on the binary payload of
 last layer. So while it may be possible to dissect a UDP payload
 containing HTTP, it is not possible to decode HTTP from the payload of
-the IP or Ethernet layer. The =last_layer()= [fn:1] method is an easy to
+the IP or Ethernet layer. The lastlayer() [fn:1] method is an easy to
 bypass the issue.
 
 The `dissect` method assigns dissected and decoded information to the
@@ -22,7 +22,7 @@ object to which it belongs. There is no output.
 #+BEGIN_SRC python
 captures = scapy.rdpcap("/tmp/captures.pcap", count=10) # This is an example file
 packet = captures[-1]
-last_layer = packet.last_layer()
+last_layer = packet.lastlayer()
 myhttp = HTTP()
 myhttp.dissect(last_layer.raw_packet_cache) # This metho is called on raw binary data from the layer
 myhttp.display() # Should display a wide/tall view of the HTTP-layer information if there was such content
