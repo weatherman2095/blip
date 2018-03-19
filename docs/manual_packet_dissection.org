@@ -38,6 +38,16 @@ print(result)
 
 Which would print True or False depending on the packet provided. [fn:2]
 
+Ideally, one would instead test if the packet contains HTTP data
+before going through the whole process of dissecting it, similarly to
+this.
+#+BEGIN_SRC python
+last_layer = packet.lastlayer()
+http = HTTP()
+res_class = http.guess_payload_class(last_layer.raw_packet_cache)
+print(res_class == HTTPRequest)
+#+END_SRC
+
 * Footnotes
 
 [fn:1] A method which is documented nowhere, at the time of writing,
