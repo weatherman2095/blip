@@ -40,8 +40,6 @@ Keyword Arguments:
         parsed.output = stdout.buffer # Prevent stdout with 'w' permission issues
     return parsed
 
-
-
 def capture_callback(destination, content):
     """Function which will be called on each packet capture which matches the filters.
 
@@ -56,7 +54,8 @@ def capture_callback(destination, content):
 
     """
 
-    destination.write(bytes(content.payload))
+    payload = extract_http_req(content)
+    destination.write(payload)
 
 def extract_http_req(packet):
     """Attempts to extracts an HTTP payload from a raw packet and returns it"""
@@ -84,9 +83,9 @@ def capture_traffic(pargs):
         callback = partial(capture_callback, out) # This may or may not lead to more context-switching than closures depending on internal implementation.
 
         if is_dev:
-            s.sniff(prn=callback, count=pargs.limit, iface=pargs.device, lfilter=http_req_filter, filter=pargs.filter)
+            s.sniff(prn=callback, count=pargs.limit, iface=pargs.device, lfilter=http_req_filter, filter=pargs.filter, store=False)
         else:
-            s.sniff(prn=callback, count=pargs.limit, offline=pargs.pcap_input, lfilter=http_req_filter, filter=pargs.filter)
+            s.sniff(prn=callback, count=pargs.limit, offline=pargs.pcap_input, lfilter=http_req_filter, filter=pargs.filter, store=False)
 
 def main(args=None):
     pargs = parse_args(args)
