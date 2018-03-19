@@ -13,7 +13,7 @@ packet's last layer.
 The dissection code will only properly work on the binary payload of
 last layer. So while it may be possible to dissect a UDP payload
 containing HTTP, it is not possible to decode HTTP from the payload of
-the IP or Ethernet layer. The =last_layer()= [fn:ll] method is an easy to
+the IP or Ethernet layer. The =last_layer()= [fn:1] method is an easy to
 bypass the issue.
 
 The `dissect` method assigns dissected and decoded information to the
@@ -36,10 +36,11 @@ result = myhttp.haslayer(HTTPRequest) or myhttp.haslayer(HTTPresponse)
 print(result)
 #+END_SRC
 
-Which would print True or False depending on the packet provided. [fn:ml]
+Which would print True or False depending on the packet provided. [fn:2]
 
 * Footnotes
 
-[fn:ll] A method which is documented nowhere, at the time of writing,
+[fn:1] A method which is documented nowhere, at the time of writing,
 outside of source-code yet used in examples.
-[fn:ml] The matching logic used can be found here: [[https://github.com/invernizzi/scapy-http/blob/df0caa6f38a88e45f64dff0bb3cdfaceee270ae2/scapy_http/http.py#L241][scapy-http Github repository]].
+
+[fn:2] The matching logic used can be found here: [[https://github.com/invernizzi/scapy-http/blob/df0caa6f38a88e45f64dff0bb3cdfaceee270ae2/scapy_http/http.py#L241][scapy-http Github repository]].
