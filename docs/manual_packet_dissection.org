@@ -1,0 +1,45 @@
+* How to do analyze http content
+
+Many thanks to [[https://scapy.readthedocs.io/en/latest/build_dissect.html][Scapy Documentation]] for useful examples.
+
+First, instantiate an HTTP object to provide a layer reference which
+is used by internal methods.
+
+Then, presuming you have captured a number of valid TPC packets before
+(or whatever transport you think may contain an HTTP payload), take
+any one of them and call your object's dissect method upon the
+packet's last layer.
+
+The dissection code will only properly work on the binary payload of
+last layer. So while it may be possible to dissect a UDP payload
+containing HTTP, it is not possible to decode HTTP from the payload of
+the IP or Ethernet layer. The =last_layer()= [fn:ll] method is an easy to
+bypass the issue.
+
+The `dissect` method assigns dissected and decoded information to the
+object to which it belongs. There is no output.
+
+#+BEGIN_SRC python
+captures = scapy.rdpcap("/tmp/captures.pcap", count=10) # This is an example file
+packet = captures[-1]
+last_layer = packet.last_layer()
+myhttp = HTTP()
+myhttp.dissect(last_layer.raw_packet_cache) # This metho is called on raw binary data from the layer
+myhttp.display() # Should display a wide/tall view of the HTTP-layer information if there was such content
+#+END_SRC
+
+To test if HTTP data was indeed contained in the packet, one can
+follow similar logic to the next example.
+
+#+BEGIN_SRC python
+result = myhttp.haslayer(HTTPRequest) or myhttp.haslayer(HTTPresponse)
+print(result)
+#+END_SRC
+
+Which would print True or False depending on the packet provided. [fn:ml]
+
+* Footnotes
+
+[fn:ll] A method which is documented nowhere, at the time of writing,
+outside of source-code yet used in examples.
+[fn:ml] The matching logic used can be found here: [[https://github.com/invernizzi/scapy-http/blob/df0caa6f38a88e45f64dff0bb3cdfaceee270ae2/scapy_http/http.py#L241][scapy-http Github repository]].
