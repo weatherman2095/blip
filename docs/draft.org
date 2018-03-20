@@ -33,12 +33,21 @@ destination port (8083) and the HTTP protocol for our captures.
 | Magic    |              4 | A word to help us identify the beginning of a record |
 | Exchange |              1 | The id of the exchange                               |
 | Length   |              4 | The number of bytes in the payload                   |
+| Type     |              1 | An enum byte determining the type of the Payload     |
 | Payload  |              N | The JSON or Protobuf payload                         |
 
 The output format is more complex than I'd like, but in the presence
 of Protobuf data, I think it makes sense to treat an output record as
 a sequence of bytes rather than as a space-delimited line of
 characters.
+
+*** Type Values
+
+| Type      | Value |
+|-----------+-------|
+| JSON      |     0 |
+| Protobuf  |     1 |
+
 
 ** Possible difficulties
 - Multi-packet requests :: some requests are too long for one TCP
