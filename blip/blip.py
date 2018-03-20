@@ -1,23 +1,20 @@
 #!/usr/bin/env python3
 
+# External Libraries imports
+from scapy_http.http import HTTP, HTTPRequest, HTTPResponse
+import scapy.all as s
+
+# Standard Library imports
 from sys import argv, stdout, stderr
 from functools import partial
-
 import pkg_resources  # part of setuptools
 import argparse
-
-try: # Original comments may or may not be accurate depending on setuptools environment
-    # This import works from the project directory
-    from  scapy_http.http import HTTP, HTTPRequest, HTTPResponse
-except ImportError:
-    # If you installed this package via pip, you just need to execute this
-    from scapy.layers import http
-import scapy.all as s
+import json
 
 __version__ = pkg_resources.require("blip")[0].version
 
 def parse_args(args=None):
-    """Parse arguments parsed to the function and return parsed argparse object
+    """Parse arguments parsed to the function and return parsed argparse object.
 
 Keyword Arguments:
     args -- An array of string arguments, much like sys.argv passes"""
@@ -55,12 +52,51 @@ def capture_callback(destination, content):
     """
 
     payload = extract_http_req(content)
-    destination.write(payload)
+
+    if payload is None:
+        return
+
+    http_item = payload.getlayer(HTTPRequest) or payloadgetlayer(HTTPResponse)
+
+    if http_item is None:
+        return
+
+    parsed_load = try_parse_protobuf(http_item) or try_parse_json(http_item)
+
+    if parsed_load is None:
+        return
+
+    destination.write(bytes(json.dumps(parsed_load), "utf-8"))
+
+def try_parse_json(http_item):
+    """Attempt to parse and return the item's payload/body as json.
+Return None on failure.
+
+Keyword Arguments:
+    http_item -- An HTTPResponse or HTTPRequest object
+
+    """
+    raw_json = http_item.payload.raw_packet_cache
+    try:
+        json_out = json.loads(raw_json.decode())
+        return json_out
+    except :
+        return None
+
+def try_parse_protobuf(http_item):
+    """Attempt to parse and return the item's payload/body as protobuf.
+Return None on failure.
+
+Keyword Arguments:
+    http_item -- An HTTPResponse or HTTPRequest object
+
+    """
+    return None
 
 def extract_http_req(packet):
     """Attempts to extracts an HTTP payload from a raw packet and returns it"""
     http = HTTP()
-    ll_pkt = packet.last_layer()
+    ll_pkt = packet.lastlayer()
     http.dissect(ll_pkt.raw_packet_cache) # Setting the object from the input
     return http
 
@@ -78,6 +114,7 @@ def http_req_filter(packet):
     return res_class == HTTPRequest
 
 def capture_traffic(pargs):
+    """Initiate capture of data from a device or pcap file"""
     is_dev = pargs.device is not None
     with pargs.output as out: # Ensure proper resource disposal
         callback = partial(capture_callback, out) # This may or may not lead to more context-switching than closures depending on internal implementation.
