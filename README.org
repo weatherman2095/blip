@@ -65,6 +65,9 @@ pip3 install git+https://github.com/invernizzi/scapy-http@df0caa6f38a88e45f64dff
 
 ** Examples
 
+/Warning: Each example assumes your shell is within the virtualenv's
+root directory./
+
 Note: ~sudo~ is used for convenience's sake, as an account with
 administrative or root permissions would work just as well.
 
