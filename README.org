@@ -58,7 +58,7 @@ run ~deactivate~.
 #+BEGIN_HTML
 <p style="font-style: italic;">Note: scapy-http requires a particular method of installation because
 the current repository version (which is required for python3 compatibility) has not been uploaded
- to <a href="https://pypi.python.org/pypi">PyPI</a> yet.</p>
+to <a href="https://pypi.python.org/pypi">PyPI</a> yet.</p>
 #+END_HTML
 
 *** pip3 Installation
@@ -76,15 +76,15 @@ relying on a more verbose command.
 
 ** Examples
 
-/Warning: Each example assumes your shell is within the repository
-directory./
+/Warning: Each example assumes your shell is within the virtualenv's
+root directory./
 
 Note: ~sudo~ is used for convenience's sake, as an account with
 administrative or root permissions would work just as well.
 
 *Example 1*
 #+BEGIN_SRC sh
-sudo ./blip/blip/blip.py -d wlp4s0 | pv > /tmp/output.bin
+sudo bin/blip -d wlp4s0 | pv > /tmp/output.bin
 #+END_SRC
 This command would capture packets from wlp4s0 (a wireless device),
 pipe the output through pv for stderr metric measurements display and
@@ -92,14 +92,14 @@ write the extracted data to ~/tmp/output.bin~.
 
 *Example 2*
 #+BEGIN_SRC sh
-sudo ./blip/blip.py -d wlp4s0 -o /tmp/output.bin
+sudo blip/blip -d wlp4s0 -o /tmp/output.bin
 #+END_SRC
 This command would capture packets from wlp4s0 (a wireless device) and
 write the extracted data to ~/tmp/output.bin~.
 
 *Example 3*
 #+BEGIN_SRC sh
-sudo ./blip/blip.py -d wlp4s0 -o /tmp/output.bin -f "dst port 80"
+sudo bin/blip -d wlp4s0 -o /tmp/output.bin -f "dst port 80"
 #+END_SRC
 This command would capture packets with a destination equal to port
 80, and write the extracted data to ~/tmp/output.bin~. Any valid [[https://biot.com/capstats/bpf.html][BPF
@@ -107,7 +107,7 @@ syntax]] expression should be compatible with the program.
 
 *Example 4*
 #+BEGIN_SRC sh
-sudo ./blip/blip.py -d wlp4s0 -o /tmp/output.bin -l 3
+sudo bin/blip -d wlp4s0 -o /tmp/output.bin -l 3
 #+END_SRC
 This command would capture 3 packets from wlp4s0 (a wireless device)
 and write the extracted data to ~/tmp/output.bin~. A limit of zero
@@ -115,7 +115,7 @@ means unlimited capture, which is the default.
 
 *Example 5*
 #+BEGIN_SRC sh
-sudo ./blip/blip.py -p /tmp/input.pcap -o /tmp/output.bin
+sudo bin/blip -p /tmp/input.pcap -o /tmp/output.bin
 #+END_SRC
 This command would read packets from the file ~/tmp/input.pcap~ and
 write the extracted data to ~/tmp/output.bin~.

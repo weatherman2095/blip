@@ -17,6 +17,11 @@ setup(
     description="Bid-Request Capture Program",
     long_description='blip is a simple python utility for capturing network traffic from a provided device or pcap file and extract wanted protobuf or JSON payloads for the sake of replaying them later with another utility.',
     packages=['blip'],
+    entry_points={
+        'console_scripts' : [
+            'blip = blip:main'
+        ]
+    },
     include_package_data=True,
     platforms=['Linux', 'BSD'],
     # test_suite='',
