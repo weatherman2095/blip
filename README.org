@@ -25,6 +25,13 @@ depending on the UNIX-like system you use, therefore it is recommended
 to simply request ~sudo~ permissions from your local system
 administrator.
 
+**** *External Dependencies*
+
+Any network sniffing using *blip* requires a usable ~tcpdump~ install
+reachable through your ~$PATH~ due to ~Scapy~ dependencies.
+
+PCAP-related features do not require ~tcpdump~.
+
 *** Recommended Setup
 
 It is recommended to install the application inside a virtualenv in
