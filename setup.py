@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 __version__ = "1.0.0"
 
@@ -16,7 +16,7 @@ setup(
     # cmdclass={'test': PyTest},
     description="Bid-Request Capture Program",
     long_description='blip is a simple python utility for capturing network traffic from a provided device or pcap file and extract wanted protobuf or JSON payloads for the sake of replaying them later with another utility.',
-    packages=['blip'],
+    packages=find_packages(), # ['blip', 'blip.protobuf']
     entry_points={
         'console_scripts' : [
             'blip = blip:main'
