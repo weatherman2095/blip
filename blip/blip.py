@@ -2,16 +2,43 @@
 
 # External Libraries imports
 from scapy_http.http import HTTP, HTTPRequest, HTTPResponse
+from google.protobuf.message import DecodeError
 import scapy.all as s
 
 # Standard Library imports
+from json.decoder import JSONDecodeError
+from json import loads as json_loads
 from sys import argv, stdout, stderr
 from functools import partial
 import pkg_resources  # part of setuptools
 import argparse
-import json
+import struct
+
+# Project Imports
+from blip.protobuf.doubleclick_proto_pb2 import BidRequest
+from blip.protobuf.blip_record_pb2 import BlipRecord
 
 __version__ = pkg_resources.require("blip")[0].version
+
+MAGIC = "BLIP".encode("utf-8")
+JSON = 0
+PROTOBUF  = 1
+EXCHANGES = {
+    "REDACTED": 1,
+    "REDACTED": 3,
+    "REDACTED": 4,
+    "REDACTED": 5,
+    "REDACTED": 6,
+    "REDACTED": 7,
+    "REDACTED": 8,
+    "REDACTED": 9,
+    "REDACTED": 10,
+    "REDACTED": 11,
+    "REDACTED": 12,
+    "REDACTED": 14,
+    "REDACTED": 15,
+    "REDACTED": 16
+}
 
 def parse_args(args=None):
     """Parse arguments parsed to the function and return parsed argparse object.
@@ -24,8 +51,8 @@ Keyword Arguments:
     device_group.add_argument('--device', '-d', type=str, metavar="DEV", default=None, help="Device from which to capture input")
     device_group.add_argument('--pcap-input', '-p', type=str, metavar="CAPFILE", default=None, help="PCAP file from which to read input")
 
-    argparser.add_argument('--filter','-f', type=str, default=None, help="Berkeley Packet Filter string to optionally apply on all sniffing")
-    argparser.add_argument('--output','-o',
+    argparser.add_argument('--filter', '-f', type=str, default=None, help="Berkeley Packet Filter string to optionally apply on all sniffing")
+    argparser.add_argument('--output', '-o',
                            type=argparse.FileType('wb'),
                            metavar='FILE', help="Write binary output to FILE instead of stdout",
                            default=stdout.buffer)
@@ -56,20 +83,46 @@ def capture_callback(destination, content):
     if payload is None:
         return
 
-    http_item = payload.getlayer(HTTPRequest) or payloadgetlayer(HTTPResponse)
+    http_item = payload.getlayer(HTTPRequest) or payload.getlayer(HTTPResponse)
 
     if http_item is None:
         return
 
-    parsed_load = try_parse_protobuf(http_item) or try_parse_json(http_item)
-
-    if parsed_load is None:
+    try:
+        path = http_item.fields["Path"].decode('utf-8')
+    except KeyError:
         return
 
-    destination.write(bytes(json.dumps(parsed_load), "utf-8"))
+    payload_type = try_parse_protobuf(http_item) or try_parse_json(http_item)
+
+    if payload_type is None:
+        return
+
+    prepared_output = prepare_output(path, http_item.payload.raw_packet_cache, payload_type)
+    destination.write(prepared_output)
+
+def prepare_output(path, raw_load, load_type, builder=struct.Struct("!4sIIH")):
+    """Take the request path, raw payload and loadtime, return as binary-packed structure
+
+Keyword Arguments:
+    load -- Decoded payload, can be any format defined in /docs
+    raw_load -- Raw binary payload, can be any format defined in /docs
+    load_type -- Integer which determines the payload format, as define in /docs
+    builder -- Auto-instantiated builder for structures
+
+Returns:
+    bytes -- A binary structure containing all the passed information.
+
+"""
+    exchange = EXCHANGES[path]
+    length = len(raw_load)
+
+    out = builder.pack(MAGIC, exchange, length, load_type) + raw_load
+
+    return out
 
 def try_parse_json(http_item):
-    """Attempt to parse and return the item's payload/body as json.
+    """Attempt to parse as JSON and return the type id.
 Return None on failure.
 
 Keyword Arguments:
@@ -78,20 +131,24 @@ Keyword Arguments:
     """
     raw_json = http_item.payload.raw_packet_cache
     try:
-        json_out = json.loads(raw_json.decode())
-        return json_out
-    except :
+        json_out = json_loads(raw_json.decode())
+        return JSON
+    except (JSONDecodeError, TypeError):
         return None
 
 def try_parse_protobuf(http_item):
-    """Attempt to parse and return the item's payload/body as protobuf.
+    """Attempt to parse as protobuf as return the type id.
 Return None on failure.
 
 Keyword Arguments:
     http_item -- An HTTPResponse or HTTPRequest object
 
     """
-    return None
+    try:
+        protobuf = BidRequest.FromString(http_item.payload.raw_packet_cache)
+        return PROTOBUF # Protobuf output = 1
+    except DecodeError:
+        return None
 
 def extract_http_req(packet):
     """Attempts to extracts an HTTP payload from a raw packet and returns it"""
@@ -125,6 +182,7 @@ def capture_traffic(pargs):
             s.sniff(prn=callback, count=pargs.limit, offline=pargs.pcap_input, lfilter=http_req_filter, filter=pargs.filter, store=False)
 
 def main(args=None):
+    """blip main entry point, provides all functionality"""
     pargs = parse_args(args)
     capture_traffic(pargs)
 
