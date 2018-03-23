@@ -19,7 +19,7 @@ setup(
     packages=find_packages(), # ['blip', 'blip.protobuf']
     entry_points={
         'console_scripts' : [
-            'blip = blip:main'
+            'blip = blip.blip:main'
         ]
     },
     include_package_data=True,

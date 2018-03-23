@@ -31,7 +31,7 @@ destination port (8083) and the HTTP protocol for our captures.
 | Field    | Length (bytes) | Description                                          |
 |----------+----------------+------------------------------------------------------|
 | Magic    |              4 | A word to help us identify the beginning of a record |
-| Exchange |              4 | The id of the exchange                               |
+| Exchange |              1 | The id of the exchange                               |
 | Length   |              4 | The number of bytes in the payload                   |
 | Type     |              1 | An enum byte determining the type of the Payload     |
 | Payload  |              N | The JSON or Protobuf payload                         |

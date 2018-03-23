@@ -15,30 +15,11 @@ import argparse
 import struct
 
 # Project Imports
+from blip.constants import MAGIC, JSON, EXCHANGES, PROTOBUF
 from blip.protobuf.doubleclick_proto_pb2 import BidRequest
 from blip.protobuf.blip_record_pb2 import BlipRecord
 
 __version__ = pkg_resources.require("blip")[0].version
-
-MAGIC = "BLIP".encode("utf-8")
-JSON = 0
-PROTOBUF  = 1
-EXCHANGES = {
-    "REDACTED": 1,
-    "REDACTED": 3,
-    "REDACTED": 4,
-    "REDACTED": 5,
-    "REDACTED": 6,
-    "REDACTED": 7,
-    "REDACTED": 8,
-    "REDACTED": 9,
-    "REDACTED": 10,
-    "REDACTED": 11,
-    "REDACTED": 12,
-    "REDACTED": 14,
-    "REDACTED": 15,
-    "REDACTED": 16
-}
 
 def parse_args(args=None):
     """Parse arguments parsed to the function and return parsed argparse object.
@@ -89,7 +70,11 @@ def capture_callback(destination, content):
         return
 
     try:
-        path = http_item.fields["Path"].decode('utf-8')
+        raw_path = http_item.fields["Path"]
+        if raw_path is not None:
+            path = raw_path.decode('utf-8')
+        else:
+            return
     except KeyError:
         return
 
@@ -101,7 +86,7 @@ def capture_callback(destination, content):
     prepared_output = prepare_output(path, http_item.payload.raw_packet_cache, payload_type)
     destination.write(prepared_output)
 
-def prepare_output(path, raw_load, load_type, builder=struct.Struct("!4sIIH")):
+def prepare_output(path, raw_load, load_type, builder=struct.Struct("!4sBIB")):
     """Take the request path, raw payload and loadtime, return as binary-packed structure
 
 Keyword Arguments:
@@ -133,7 +118,7 @@ Keyword Arguments:
     try:
         json_out = json_loads(raw_json.decode())
         return JSON
-    except (JSONDecodeError, TypeError):
+    except (JSONDecodeError, TypeError, AttributeError):
         return None
 
 def try_parse_protobuf(http_item):
@@ -147,7 +132,7 @@ Keyword Arguments:
     try:
         protobuf = BidRequest.FromString(http_item.payload.raw_packet_cache)
         return PROTOBUF # Protobuf output = 1
-    except DecodeError:
+    except (DecodeError, TypeError):
         return None
 
 def extract_http_req(packet):
