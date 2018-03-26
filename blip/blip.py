@@ -17,7 +17,7 @@ import struct
 # Project Imports
 from blip.constants import MAGIC, JSON, EXCHANGES, PROTOBUF
 from blip.protobuf.doubleclick_proto_pb2 import BidRequest
-from blip.protobuf.blip_record_pb2 import BlipRecord
+from blip.encoding import BlipRecord, write_record
 
 __version__ = pkg_resources.require("blip")[0].version
 
@@ -83,8 +83,13 @@ def capture_callback(destination, content):
     if payload_type is None:
         return
 
-    prepared_output = prepare_output(path, http_item.payload.raw_packet_cache, payload_type)
-    destination.write(prepared_output)
+    write_output(path, payload_type, http_item.payload.raw_packet_cache, destination)
+
+def write_output(path, payload_type, payload, fd):
+    exchange = EXCHANGES[path]
+    record = BlipRecord(exchange, payload_type, payload)
+    write_record(record, fd)
+
 
 def prepare_output(path, raw_load, load_type, builder=struct.Struct("!4sBIB")):
     """Take the request path, raw payload and loadtime, return as binary-packed structure
@@ -118,7 +123,7 @@ Keyword Arguments:
     try:
         json_out = json_loads(raw_json.decode())
         return JSON
-    except (JSONDecodeError, TypeError, AttributeError):
+    except (JSONDecodeError, UnicodeDecodeError, TypeError, AttributeError):
         return None
 
 def try_parse_protobuf(http_item):
