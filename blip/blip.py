@@ -42,7 +42,7 @@ Keyword Arguments:
 
     parsed = argparser.parse_args(args) if args is not None else argparser.parse_args() # Allow REPL debugging with arg lists
     if parsed.output.name == stdout.name:
-        parsed.output = stdout.buffer # Prevent stdout with 'w' permission issues
+        parsed.output = stdout.buffer # Prevent stdout with 'w' rather than 'wb' permission issues
     return parsed
 
 def capture_callback(destination, content):

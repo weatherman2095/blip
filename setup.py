@@ -19,7 +19,8 @@ setup(
     packages=find_packages(), # ['blip', 'blip.protobuf']
     entry_points={
         'console_scripts' : [
-            'blip = blip.blip:main'
+            'blip = blip.blip:main',
+            'blip_showdb = blip.encoding:print_contents_cli',
         ]
     },
     include_package_data=True,

@@ -83,6 +83,37 @@ def records_from_fd(fd):
 
         yield res
 
+def print_contents_cli():
+    parsed = parse_args_cli()
+    with parsed.input as fd:
+        for item in records_from_fd(fd):
+            parsed.output.write(bytes("{}\n".format(item.__repr__()), 'utf-8'))
+
+def parse_args_cli(args=None):
+    """Parse arguments parsed to the function and return parsed argparse object.
+
+Keyword Arguments:
+    args -- An array of string arguments, much like sys.argv passes"""
+    from sys import stdout, stderr, stdin
+    import argparse
+
+    # Imports are run once and cached. This function should only run
+    # in CLI, importing them globably is wasteful.
+
+    argparser = argparse.ArgumentParser(prog="blip_showdb", description="Pretty print the contents of a blip binary file to stdout.")
+
+    argparser.add_argument('input', type=argparse.FileType('rb'), metavar="SOURCE", help="Source from which to obtain binary contents.",
+                           default=stdin.buffer)
+    argparser.add_argument('--output', '-o',
+                           type=argparse.FileType('wb'),
+                           metavar='FILE', help="Write binary output to FILE instead of stdout",
+                           default=stdout.buffer)
+
+    parsed = argparser.parse_args(args) if args is not None else argparser.parse_args() # Allow REPL debugging with arg lists
+    if parsed.output.name == stdout.name:
+        parsed.output = stdout.buffer # Prevent stdout with 'w' rather than 'wb' permission issues
+    return parsed
+
 def test():
     recs = [BlipRecord(3, 0, b"{CASALE JSON}"),
             BlipRecord(6, 0, b"{ADGEAR JSON}")]
