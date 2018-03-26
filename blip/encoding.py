@@ -12,11 +12,19 @@ Invariants
 
 from struct import Struct, error as struct_error
 from blip.constants import MAGIC
+from contextlib import contextmanager
 
 class IncorrectMagicException(Exception): pass
 class IncorrectLengthException(Exception): pass
 
 class BlipRecord():
+    """Container class for blip record metadata.
+
+Fields:
+
+    exchange -- Numerical exchange ID (uint8)
+    payload_type -- Numerical payload type (uint8)
+    payload -- Binary payload, typed according to payload_type"""
     converter = Struct("!4sBIB")
 
     def __init__(self, exchange, payload_type, payload):
@@ -30,7 +38,7 @@ class BlipRecord():
 
 def read_record(fd):
     """
-    Read a Record from a file handle
+    Read a Record from a file handle.
     """
     header = fd.read(10)
     try:
@@ -50,12 +58,30 @@ def read_record(fd):
 
 def write_record(record, fd):
     """
-    Write a Record to a file handle
+    Write a Record to a file handle.
     """
     output_b = BlipRecord.converter.pack(MAGIC, record.exchange,
                                        len(record.payload), record.payload_type)
     final_out = output_b + record.payload
     fd.write(final_out)
+
+@contextmanager
+def read_record_file(filename):
+    """Return a generator for all records in `filename` as the context value.
+
+Properly disposes of the file context as required."""
+    with open(filename, "rb") as f:
+        yield records_from_fd(f)
+
+def records_from_fd(fd):
+    """Yield all records from the provided file handle."""
+    while True:
+        try:
+            res = read_record(fd)
+        except (IncorrectMagicException, IncorrectLengthException):
+            raise StopIteration
+
+        yield res
 
 def test():
     recs = [BlipRecord(3, 0, b"{CASALE JSON}"),
@@ -73,6 +99,16 @@ def test():
                 print("Read: %r" % r)
             except (IncorrectMagicException, IncorrectLengthException) as e:
                 break
+
+    print("Now testing generator")
+    with open("records.bin", 'rb') as f:
+        for item in records_from_fd(f):
+            print("Iterated on: {}".format(item))
+
+    print("Now testing contextmanager")
+    with read_record_file("records.bin") as reader:
+        for item in reader:
+            print("Reader said: {}".format(item))
 
 if __name__ == "__main__":
      test()
