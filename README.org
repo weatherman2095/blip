@@ -23,9 +23,8 @@ administrator.
 
 **** External Dependencies
 
-blip requires ~tcpdump~ to capture packets from a network device.
-
-Tcpdump is not required when capturing from a PCAP file.
+blip requires ~tcpdump~ to filter packets from a network device or
+PCAP file.
 
 *** Recommended Setup
 
