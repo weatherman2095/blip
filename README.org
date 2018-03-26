@@ -59,7 +59,7 @@ method is deprecated due to the availability of better tooling within
 [[http://setuptools.readthedocs.io/en/latest/index.html][setuptools]].
 
 #+BEGIN_SRC sh
-pip3 install git+https://github.com/invernizzi/scapy-http@df0caa6f38a88e45f64dff0bb3cdfaceee270ae2 -r blip/requirements.txt
+pip3 install git+https://github.com/invernizzi/scapy-http@d74793f2aaa287dc4d6aa97233dbdab3f2a0d11d -r blip/requirements.txt
 #+END_SRC
 
 
