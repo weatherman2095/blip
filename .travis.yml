@@ -1,0 +1,21 @@
+language: python
+
+python:
+  - "3.4"
+  - "3.5"
+  - "3.6"
+
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y tcpdump
+
+# command to install dependencies
+install:
+  - python3 setup.py install
+
+# command to run tests
+script:
+  - py.test # pytest # or py.test for Python versions 3.5 and below
+  - python3 -c 'from test import test_encoding as te; te.manual_test()'
+
+sudo: enabled
