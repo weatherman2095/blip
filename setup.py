@@ -8,24 +8,21 @@ setup(
     url="https://github.com/weatherman2095/blip",
     author='Gabriel Lupien-Angell',
     author_email='g.lupien-angell@adgear.com',
-    # tests_require=['pytest'],
+
     install_requires=['protobuf>=3.0.0',
                       'scapy>=2.4.0.rc5',
                       'scapy-http'],
     dependency_links=['git+https://github.com/invernizzi/scapy-http@d74793f2aaa287dc4d6aa97233dbdab3f2a0d11d#egg=scapy-http'],
-    # cmdclass={'test': PyTest},
     description="Bid-Request Capture Program",
     long_description='blip is a simple python utility for capturing network traffic from a provided device or pcap file and extract wanted protobuf or JSON payloads for the sake of replaying them later with another utility.',
-    packages=find_packages(), # ['blip', 'blip.protobuf']
+    packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]), # ['blip', 'blip.protobuf']
     entry_points={
         'console_scripts' : [
             'blip = blip.blip:main',
             'blip_showdb = blip.encoding:print_contents_cli',
         ]
     },
-    include_package_data=True,
     platforms=['Linux', 'BSD'],
-    # test_suite='',
     keywords="Networking, Packet Filtering, Berkeley Packet Filter syntax, HTTP, JSON, protobuf",
     classifiers = [
         'Programming Language :: Python',
@@ -40,7 +37,9 @@ setup(
         'Environment :: Console',
         'Topic :: Internet',
         ],
-    extras_require={
-        # 'testing': ['pytest'],
-    }
+    cmdclass={},
+    test_suite='test',
+    tests_require=[],
+    extras_require={},
+    include_package_data=True,
 )

@@ -79,7 +79,7 @@ def records_from_fd(fd):
         try:
             res = read_record(fd)
         except (IncorrectMagicException, IncorrectLengthException):
-            raise StopIteration
+            return
 
         yield res
 
@@ -113,33 +113,3 @@ Keyword Arguments:
     if parsed.output.name == stdout.name:
         parsed.output = stdout.buffer # Prevent stdout with 'w' rather than 'wb' permission issues
     return parsed
-
-def test():
-    recs = [BlipRecord(3, 0, b"{CASALE JSON}"),
-            BlipRecord(6, 0, b"{ADGEAR JSON}")]
-
-    with open("records.bin", "wb") as fd:
-        for r in recs:
-            write_record(r, fd)
-            print("Wrote: {}".format(r.__repr__()))
-
-    with open("records.bin", "rb") as fd:
-        while True:
-            try:
-                r = read_record(fd)
-                print("Read: %r" % r)
-            except (IncorrectMagicException, IncorrectLengthException) as e:
-                break
-
-    print("Now testing generator")
-    with open("records.bin", 'rb') as f:
-        for item in records_from_fd(f):
-            print("Iterated on: {}".format(item))
-
-    print("Now testing contextmanager")
-    with read_record_file("records.bin") as reader:
-        for item in reader:
-            print("Reader said: {}".format(item))
-
-if __name__ == "__main__":
-     test()
