@@ -1,3 +1,5 @@
 protobuf>=3.0.0
-scapy>=2.4.0rc5
+pcapy
+dpkt
+simplejson
 
