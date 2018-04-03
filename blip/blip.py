@@ -6,7 +6,6 @@ import pcapy
 import dpkt
 
 # Standard Library imports
-from json import loads as json_loads
 from sys import argv, stdout, stderr
 from functools import partial
 import pkg_resources  # part of setuptools
@@ -21,9 +20,11 @@ from blip.encoding import BlipRecord, write_record
 # Retrocompatiblity fix
 try:
     from json.decoder import JSONDecodeError
-except:
-     # Python 3.4 doesn't have JSONDecodeError, instead use ValueError
-    JSONDecodeError = ValueError
+    from json import loads as json_loads
+except ImportError:
+     # Python 3.4 doesn't have JSONDecodeError
+    from simplejson.decoder import JSONDecodeError
+    from simplejson import loads as json_loads
 
 __version__ = pkg_resources.require("blip")[0].version
 
