@@ -6,8 +6,6 @@ import pcapy
 import dpkt
 
 # Standard Library imports
-from json.decoder import JSONDecodeError
-from json import loads as json_loads
 from sys import argv, stdout, stderr
 from functools import partial
 import pkg_resources  # part of setuptools
@@ -18,6 +16,15 @@ import struct
 from blip.constants import MAGIC, JSON, EXCHANGES, PROTOBUF
 from blip.protobuf.doubleclick_proto_pb2 import BidRequest
 from blip.encoding import BlipRecord, write_record
+
+# Retrocompatiblity fix
+try:
+    from json.decoder import JSONDecodeError
+    from json import loads as json_loads
+except ImportError:
+     # Python 3.4 doesn't have JSONDecodeError
+    from simplejson.decoder import JSONDecodeError
+    from simplejson import loads as json_loads
 
 __version__ = pkg_resources.require("blip")[0].version
 
