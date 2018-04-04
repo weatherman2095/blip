@@ -33,7 +33,7 @@ Fields:
         self.payload = payload
 
     def __repr__(self):
-        return "<Record: exchange={}, type={}, length={}, payload={}..>".format(
+        return "<Record: Exchange={}, Type={}, Length={}, Payload={}>".format(
             self.exchange, self.payload_type, len(self.payload), self.payload)
 
 def read_record(fd):
@@ -87,7 +87,17 @@ def print_contents_cli():
     parsed = parse_args_cli()
     with parsed.input as fd:
         for item in records_from_fd(fd):
-            parsed.output.write(bytes("{}\n".format(item.__repr__()), 'utf-8'))
+            out_bytes = format_output_bytes(item, parsed.truncate)
+            parsed.output.write(out_bytes)
+
+
+def format_output_bytes(record, truncate):
+    if truncate:
+        fmt_string = "<Record: Exchange={}, Type={}, Length={}, Payload={{...}}>\n"
+        return bytes(fmt_string.format(record.exchange,
+                                       record.payload_type, len(record.payload)), 'utf-8')
+    else:
+        return bytes("{}\n".format(item.__repr__()), 'utf-8')
 
 def parse_args_cli(args=None):
     """Parse arguments parsed to the function and return parsed argparse object.
@@ -108,6 +118,7 @@ Keyword Arguments:
                            type=argparse.FileType('wb'),
                            metavar='FILE', help="Write binary output to FILE instead of stdout",
                            default=stdout.buffer)
+    argparser.add_argument("--truncate", "-t", help="Indicate payload output should be truncated.", action='store_true')
 
     parsed = argparser.parse_args(args) if args is not None else argparser.parse_args() # Allow REPL debugging with arg lists
     if parsed.output.name == stdout.name:
