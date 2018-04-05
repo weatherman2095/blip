@@ -97,7 +97,7 @@ def format_output_bytes(record, truncate):
         return bytes(fmt_string.format(record.exchange,
                                        record.payload_type, len(record.payload)), 'utf-8')
     else:
-        return bytes("{}\n".format(item.__repr__()), 'utf-8')
+        return bytes("{}\n".format(record.__repr__()), 'utf-8')
 
 def parse_args_cli(args=None):
     """Parse arguments parsed to the function and return parsed argparse object.
@@ -112,7 +112,7 @@ Keyword Arguments:
 
     argparser = argparse.ArgumentParser(prog="blip_showdb", description="Pretty print the contents of a blip binary file to stdout.")
 
-    argparser.add_argument('input', type=argparse.FileType('rb'), metavar="SOURCE", help="Source from which to obtain binary contents.",
+    argparser.add_argument('input', type=argparse.FileType('rb'), metavar="SOURCE", nargs='?', help="Source from which to obtain binary contents.",
                            default=stdin.buffer)
     argparser.add_argument('--output', '-o',
                            type=argparse.FileType('wb'),
@@ -123,4 +123,6 @@ Keyword Arguments:
     parsed = argparser.parse_args(args) if args is not None else argparser.parse_args() # Allow REPL debugging with arg lists
     if parsed.output.name == stdout.name:
         parsed.output = stdout.buffer # Prevent stdout with 'w' rather than 'wb' permission issues
+    if parsed.input.name == stdin.name:
+        parsed.input = stdin.buffer
     return parsed
