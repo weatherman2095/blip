@@ -1,4 +1,5 @@
 * BLIP
+
 Bid-request Capture Utility (or "Bid Logging In the Pipe" for backronym lovers)
 
 ** Description
@@ -7,6 +8,9 @@ Bid-request Capture Utility (or "Bid Logging In the Pipe" for backronym lovers)
 network device or [[http://www.tcpdump.org/pcap/pcap.html][pcap]] file, extracting the [[https://github.com/google/protobuf][Protobuf]] or [[http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf][JSON]] payloads,
 and storing them to disk.  Blip uses [[https://github.com/CoreSecurity/pcapy][Pcapy]], a fast libpcap interface
 and [[https://github.com/kbandla/dpkt][dpkt]], a fast and simple packet manipulation library.
+
+*Blip* also includes a pretty-printer named ~blip_showdb~, which can
+read and print ~blip~'s binary output.
 
 ** Setup Requirements
 
