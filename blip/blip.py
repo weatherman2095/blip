@@ -6,7 +6,8 @@ import pcapy
 import dpkt
 
 # Standard Library imports
-from sys import argv, stdout, stderr
+from sys import argv, stdout, stderr, exit as sys_exit
+from traceback import print_exc
 from functools import partial
 import pkg_resources  # part of setuptools
 import argparse
@@ -25,6 +26,10 @@ except ImportError:
      # Python 3.4 doesn't have JSONDecodeError
     from simplejson.decoder import JSONDecodeError
     from simplejson import loads as json_loads
+
+# Proper Signal Handling
+from signal import signal, SIGPIPE, SIG_DFL
+signal(SIGPIPE, SIG_DFL)
 
 __version__ = pkg_resources.require("blip")[0].version
 
@@ -198,8 +203,15 @@ def capture_traffic(pargs):
 
 def main(args=None):
     """blip main entry point, provides all functionality"""
-    pargs = parse_args(args)
-    capture_traffic(pargs)
+    try:
+        pargs = parse_args(args)
+        capture_traffic(pargs)
+    except KeyboardInterrupt:
+       pass
+    except Exception:
+        print_exc(file=stderr)
+        sys_exit(1)
+    sys_exit(0)
 
 if __name__ == '__main__':
     main()

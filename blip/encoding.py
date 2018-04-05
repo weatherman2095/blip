@@ -11,8 +11,14 @@ Invariants
 """
 
 from struct import Struct, error as struct_error
-from blip.constants import MAGIC
+from sys import stderr, exit as sys_exit
 from contextlib import contextmanager
+from traceback import print_exc
+from blip.constants import MAGIC
+
+# Proper Signal Handling
+from signal import signal, SIGPIPE, SIG_DFL
+signal(SIGPIPE, SIG_DFL)
 
 class IncorrectMagicException(Exception): pass
 class IncorrectLengthException(Exception): pass
@@ -74,7 +80,7 @@ Properly disposes of the file context as required."""
         yield records_from_fd(f)
 
 def records_from_fd(fd):
-    """Yield all records from the provided file handle."""
+    """Yield all BlipRecords from the provided file handle."""
     while True:
         try:
             res = read_record(fd)
@@ -84,14 +90,28 @@ def records_from_fd(fd):
         yield res
 
 def print_contents_cli():
-    parsed = parse_args_cli()
-    with parsed.input as fd:
-        for item in records_from_fd(fd):
-            out_bytes = format_output_bytes(item, parsed.truncate)
-            parsed.output.write(out_bytes)
-
+    try:
+        parsed = parse_args_cli()
+        with parsed.input as fd:
+            for item in records_from_fd(fd):
+                out_bytes = format_output_bytes(item, parsed.truncate)
+                parsed.output.write(out_bytes)
+    except KeyboardInterrupt:
+        pass
+    except Exception:
+        print_exc(file=stderr)
+        sys_exit(1)
+    sys_exit(0)
 
 def format_output_bytes(record, truncate):
+    """Return a byte-string BlipRecord representation in truncated or
+non-truncated form depending on truthiness of arguments.
+
+Keyword Arguments:
+    record -- BlipRecord object containing information
+    truncate -- Boolean argument which causes truncation on True
+
+    """
     if truncate:
         fmt_string = "<Record: Exchange={}, Type={}, Length={}, Payload={{...}}>\n"
         return bytes(fmt_string.format(record.exchange,
