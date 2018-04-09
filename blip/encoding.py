@@ -24,14 +24,14 @@ class IncorrectMagicException(Exception): pass
 class IncorrectLengthException(Exception): pass
 
 class BlipRecord():
-    """Container class for blip record metadata.
-
-Fields:
-
-    exchange -- Numerical exchange ID (uint8)
-    payload_type -- Numerical payload type (uint8)
-    payload -- Binary payload, typed according to payload_type"""
-    converter = Struct("!4sBIB")
+    """Container class for blip record metadata."""
+    converter = Struct(
+        "!"  # network order
+        "4s" # 4-char string: magic number
+        "B"  # byte: exchange id
+        "I"  # uint32: length of the payload
+        "B"  # byte: type (JSON or Protobuf)
+    )
 
     def __init__(self, exchange, payload_type, payload):
         self.exchange = exchange
