@@ -90,6 +90,14 @@ def records_from_fd(fd):
         yield res
 
 def print_contents_cli():
+    """Reads the content of a provided input and writes a string
+representation of all BlipRecord objects found to output
+
+Input -- is stdin by default unless changed by arguments
+Ouptut -- is stdout by default unless changed by arguments
+
+---
+Program entry_point for blip_showdb"""
     try:
         parsed = parse_args_cli()
         with parsed.input as fd:

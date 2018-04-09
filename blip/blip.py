@@ -95,29 +95,19 @@ def capture_callback(destination, header, content):
     write_output(path, payload_type, req_body, destination)
 
 def write_output(path, payload_type, payload, fd):
+    """Take the request path, payload_type, raw payload and write them to
+output file-descriptor
+
+Keyword Arguments:
+    path -- Decoded payload, can be any format defined in /docs
+    payload_type -- Integer which determines the payload format, as define in /docs
+    payload -- Raw binary payload, can be any format defined in /docs
+    fd -- File Descriptor to write output to
+
+    """
     exchange = EXCHANGES[path]
     record = BlipRecord(exchange, payload_type, payload)
     write_record(record, fd)
-
-def prepare_output(path, raw_load, load_type, builder=struct.Struct("!4sBIB")):
-    """Take the request path, raw payload and loadtime, return as binary-packed structure
-
-Keyword Arguments:
-    load -- Decoded payload, can be any format defined in /docs
-    raw_load -- Raw binary payload, can be any format defined in /docs
-    load_type -- Integer which determines the payload format, as define in /docs
-    builder -- Auto-instantiated builder for structures
-
-Returns:
-    bytes -- A binary structure containing all the passed information.
-
-"""
-    exchange = EXCHANGES[path]
-    length = len(raw_load)
-
-    out = builder.pack(MAGIC, exchange, length, load_type) + raw_load
-
-    return out
 
 def try_parse_json(http_body):
     """Attempt to parse as JSON and return the type id.
