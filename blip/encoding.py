@@ -22,6 +22,7 @@ signal(SIGPIPE, SIG_DFL)
 
 class IncorrectMagicException(Exception): pass
 class IncorrectLengthException(Exception): pass
+class PayloadTooShortException(Exception): pass
 
 class BlipRecord():
     """Container class for blip record metadata."""
@@ -56,6 +57,8 @@ def read_record(fd):
         raise IncorrectMagicException()
 
     payload = fd.read(length)
+    if len(payload) < length:
+        raise PayloadTooShortException()
     return BlipRecord(exchange, payload_type, payload)
 
 def write_record(record, fd):
