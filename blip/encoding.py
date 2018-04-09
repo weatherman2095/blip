@@ -46,19 +46,15 @@ def read_record(fd):
     """
     Read a Record from a file handle.
     """
-    header = fd.read(10)
+    header = fd.read(BlipRecord.converter.size)
     try:
-        rheader = BlipRecord.converter.unpack(header)
+        (magic, exchange, length, payload_type) = BlipRecord.converter.unpack(header)
     except struct_error:
         raise IncorrectLengthException()
 
-    magic = rheader[0]
     if magic != MAGIC:
         raise IncorrectMagicException()
 
-    exchange = rheader[1]
-    length = rheader[2]
-    payload_type = rheader[3]
     payload = fd.read(length)
     return BlipRecord(exchange, payload_type, payload)
 
