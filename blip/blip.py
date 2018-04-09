@@ -172,29 +172,11 @@ Return None on failure."""
     return tcp
 
 def try_extract_http(data):
-    """Attempt to extract an HTTP request or response from raw bytes.
-Return None on failure."""
-
-    value = try_extract_request(data) or try_extract_response(data)
-    return value
-
-def try_extract_request(data):
     """Attempt to extract an HTTP request from raw bytes.
 Return None on failure."""
 
     try:
         req = dpkt.http.Request(data)
-    except dpkt.dpkt.UnpackError:
-        return None
-
-    return req
-
-def try_extract_response(data):
-    """Attempt to extract an HTTP response from raw bytes.
-Return None on failure."""
-
-    try:
-        req = dpkt.http.Response(data)
     except dpkt.dpkt.UnpackError:
         return None
 
