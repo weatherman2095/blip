@@ -89,7 +89,7 @@ def capture_callback(destination, header, content):
     if len(req_body) <= 0:
         return # Improper request
 
-    payload_type = try_parse_protobuf(req_body) or try_parse_json(req_body)
+    payload_type =  try_parse_json(req_body) or try_parse_protobuf(req_body)
     if payload_type is None:
         return # Invalid payload
 
