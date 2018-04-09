@@ -12,7 +12,6 @@ EXCHANGES = {
     "REDACTED": 9,
     "REDACTED": 10,
     "REDACTED": 11,
-    "REDACTED?": 11, # Incorrect requests are sent from this exchange
     "REDACTED": 12,
     "REDACTED": 14,
     "REDACTED": 15,

@@ -7,6 +7,7 @@ import dpkt
 
 # Standard Library imports
 from sys import argv, stdout, stderr, exit as sys_exit
+from re import compile as re_compile
 from traceback import print_exc
 from functools import partial
 import pkg_resources  # part of setuptools
@@ -105,9 +106,27 @@ Keyword Arguments:
     fd -- File Descriptor to write output to
 
     """
-    exchange = EXCHANGES[path]
+    exchange = try_get_exchange(path)
+    if exchange is None:
+        return
+
     record = BlipRecord(exchange, payload_type, payload)
     write_record(record, fd)
+
+def try_get_exchange(exchange_path, matcher=re_compile(r"/requests/[^/?&]+")):
+    """Attempt to find an exchange id for a provided exchange path.
+Return None on failure.
+
+Keyword Arguments:
+    exchange_path -- HTTP path possibly corresponding to a valid exchange id
+    matcher -- Compiled SRE Pattern used to sanitize paths.
+    """
+    try:
+        sanitized_exchange = matcher.search(exchange_path).group(0)
+        exchange = EXCHANGES[sanitized_exchange]
+        return exchange
+    except (KeyError, AttributeError):
+        return None
 
 def try_parse_json(http_body):
     """Attempt to parse as JSON and return the type id.
