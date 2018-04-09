@@ -113,7 +113,7 @@ Keyword Arguments:
     record = BlipRecord(exchange, payload_type, payload)
     write_record(record, fd)
 
-def try_get_exchange(exchange_path, matcher=re_compile(r"/requests/[^/?&]+")):
+def try_get_exchange(exchange_path, matcher=re_compile(r"/requests/[a-zA-Z0-9]+")):
     """Attempt to find an exchange id for a provided exchange path.
 Return None on failure.
 
