@@ -22,16 +22,17 @@ signal(SIGPIPE, SIG_DFL)
 
 class IncorrectMagicException(Exception): pass
 class IncorrectLengthException(Exception): pass
+class PayloadTooShortException(Exception): pass
 
 class BlipRecord():
-    """Container class for blip record metadata.
-
-Fields:
-
-    exchange -- Numerical exchange ID (uint8)
-    payload_type -- Numerical payload type (uint8)
-    payload -- Binary payload, typed according to payload_type"""
-    converter = Struct("!4sBIB")
+    """Container class for blip record metadata."""
+    converter = Struct(
+        "!"  # network order
+        "4s" # 4-char string: magic number
+        "B"  # byte: exchange id
+        "I"  # uint32: length of the payload
+        "B"  # byte: type (JSON or Protobuf)
+    )
 
     def __init__(self, exchange, payload_type, payload):
         self.exchange = exchange
@@ -46,20 +47,18 @@ def read_record(fd):
     """
     Read a Record from a file handle.
     """
-    header = fd.read(10)
+    header = fd.read(BlipRecord.converter.size)
     try:
-        rheader = BlipRecord.converter.unpack(header)
+        magic, exchange, length, payload_type = BlipRecord.converter.unpack(header)
     except struct_error:
         raise IncorrectLengthException()
 
-    magic = rheader[0]
     if magic != MAGIC:
         raise IncorrectMagicException()
 
-    exchange = rheader[1]
-    length = rheader[2]
-    payload_type = rheader[3]
     payload = fd.read(length)
+    if len(payload) < length:
+        raise PayloadTooShortException()
     return BlipRecord(exchange, payload_type, payload)
 
 def write_record(record, fd):
@@ -112,20 +111,18 @@ Program entry_point for blip_showdb"""
     sys_exit(0)
 
 def format_output_bytes(record, truncate):
-    """Return a byte-string BlipRecord representation in truncated or
-non-truncated form depending on truthiness of arguments.
+    """Return a byte-string representation of a BlipRecord.
+    If `truncate` is True, the payload is replaced with the
+    string "..."
 
-Keyword Arguments:
-    record -- BlipRecord object containing information
+    Keyword Arguments:
+    record -- BlipRecord object
     truncate -- Boolean argument which causes truncation on True
-
     """
-    if truncate:
-        fmt_string = "<Record: Exchange={}, Type={}, Length={}, Payload={{...}}>\n"
-        return bytes(fmt_string.format(record.exchange,
-                                       record.payload_type, len(record.payload)), 'utf-8')
-    else:
-        return bytes("{}\n".format(record.__repr__()), 'utf-8')
+    fmt_string = "<Record: Exchange={}, Type={}, Length={}, Payload={}>\n"
+    payload = "..." if truncate else record.payload
+    return bytes(fmt_string.format(
+        record.exchange, record.payload_type, len(record.payload), payload), 'utf-8')
 
 def parse_args_cli(args=None):
     """Parse arguments parsed to the function and return parsed argparse object.
