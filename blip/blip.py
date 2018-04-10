@@ -92,7 +92,11 @@ def capture_callback(destination, header, content):
     if len(req_body) <= 0:
         return # Improper request
 
-    payload_type =  try_parse_json(req_body) or try_parse_protobuf(req_body)
+    payload_type =  try_parse_json(req_body)
+
+    if payload_type is None:
+        payload_type =try_parse_protobuf(req_body)
+
     if payload_type is None:
         return # Invalid payload
 
@@ -192,7 +196,6 @@ def capture_traffic(pargs):
     is_dev = pargs.device is not None
     with pargs.output as out: # Ensure proper resource disposal
         callback = partial(capture_callback, out) # This may or may not lead to more context-switching than closures depending on internal implementation.
-
         reader = pcapy.open_live(pargs.device, 65535, False, 500) if is_dev else pcapy.open_offline(pargs.pcap_input)
         reader.setfilter(pargs.filter)
         reader.loop(pargs.limit, callback)
