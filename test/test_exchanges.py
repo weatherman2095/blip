@@ -1,41 +1,47 @@
+import configparser
 import unittest
 from blip import blip
-from blip.constants import EXCHANGES
 
 class TestExchanges(unittest.TestCase):
+    cparser = None
+
     def setUp(self):
-        pass
+        global __configparser__
+        __configparser__ = configparser.ConfigParser()
+        __configparser__['EXCHANGES'] = {
+            '/requests/whatever': '1'
+        }
 
     def tearDown(self):
-        pass
+        global __configparser__
+        __configparser__ = None
 
     def test_empty_exchange(self):
         exchange = ''
-        ex = blip.try_get_exchange(exchange)
+        ex = blip.try_get_exchange(exchange, configparse=__configparser__)
         self.assertIsNone(ex)
 
     def test_invalid_exchange(self):
         exchange = '/notanexchange/endpoint'
-        ex = blip.try_get_exchange(exchange)
+        ex = blip.try_get_exchange(exchange, configparse=__configparser__)
         self.assertIsNone(ex)
 
     def test_valid_exchange(self):
-        exchange = 'REDACTED'
-        ex = blip.try_get_exchange(exchange)
-        self.assertEqual(ex, EXCHANGES[exchange])
+        exchange = '/requests/whatever'
+        ex = blip.try_get_exchange(exchange, configparse=__configparser__)
+        self.assertEqual(ex, 1)
 
     def test_rest_exchange(self):
-        exchange = 'REDACTED/1' # Any appends should be ignored
-        ex = blip.try_get_exchange(exchange)
-        self.assertEqual(ex, EXCHANGES["REDACTED"])
+        exchange = '/requests/whatever/1' # Any appends should be ignored
+        ex = blip.try_get_exchange(exchange, configparse=__configparser__)
+        self.assertEqual(ex, 1)
 
     def test_ignore_null_get(self):
-        exchange = 'REDACTED?' # Any appends should be ignored
-        ex = blip.try_get_exchange(exchange)
-        self.assertEqual(ex, EXCHANGES["REDACTED"])
+        exchange = '/requests/whatever?' # Any appends should be ignored
+        ex = blip.try_get_exchange(exchange, configparse=__configparser__)
+        self.assertEqual(ex, 1)
 
     def test_ignore_get(self):
-        exchange = 'REDACTED?first=hello&second=world'
-        ex = blip.try_get_exchange(exchange)
-        self.assertEqual(ex, EXCHANGES["REDACTED"])
-
+        exchange = '/requests/whatever?first=hello&second=world'
+        ex = blip.try_get_exchange(exchange, configparse=__configparser__)
+        self.assertEqual(ex, 1)

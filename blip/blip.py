@@ -11,11 +11,12 @@ from re import compile as re_compile
 from traceback import print_exc
 from functools import partial
 import pkg_resources  # part of setuptools
+import configparser
 import argparse
 import struct
 
 # Project Imports
-from blip.constants import MAGIC, JSON, EXCHANGES, PROTOBUF
+from blip.constants import MAGIC, JSON, PROTOBUF
 from blip.protobuf.doubleclick_proto_pb2 import BidRequest
 from blip.encoding import BlipRecord, write_record
 
@@ -33,6 +34,7 @@ from signal import signal, SIGPIPE, SIG_DFL
 signal(SIGPIPE, SIG_DFL)
 
 __version__ = pkg_resources.require("blip")[0].version
+__configparser__ = configparser.ConfigParser()
 
 def parse_args(args=None):
     """Parse arguments parsed to the function and return parsed argparse object.
@@ -51,6 +53,7 @@ Keyword Arguments:
                            metavar='FILE', help="Write binary output to FILE instead of stdout",
                            default=stdout.buffer)
     argparser.add_argument('--limit', '-l', type=int, metavar="NUM", help="Only capture NUM packets", default=0)
+    argparser.add_argument('--config','-c', type=str, nargs="+", metavar="FILE", help="Configuration file(s) to use.", default=[], required=True)
     argparser.add_argument('--version', '-v', action='version', version="{} {}".format('%(prog)s', __version__))
 
     parsed = argparser.parse_args(args) if args is not None else argparser.parse_args() # Allow REPL debugging with arg lists
@@ -113,7 +116,9 @@ Keyword Arguments:
     record = BlipRecord(exchange, payload_type, payload)
     write_record(record, fd)
 
-def try_get_exchange(exchange_path, matcher=re_compile(r"/requests/[a-zA-Z0-9]+")):
+def try_get_exchange(exchange_path,
+                     matcher=re_compile(r"/requests/[a-zA-Z0-9]+"),
+                     configparse=__configparser__):
     """Attempt to find an exchange id for a provided exchange path.
 Return None on failure.
 
@@ -123,7 +128,7 @@ Keyword Arguments:
     """
     try:
         sanitized_exchange = matcher.search(exchange_path).group(0)
-        exchange = EXCHANGES[sanitized_exchange]
+        exchange = configparse['EXCHANGES'].getint(sanitized_exchange)
         return exchange
     except (KeyError, AttributeError):
         return None
@@ -196,6 +201,7 @@ def main(args=None):
     """blip main entry point, provides all functionality"""
     try:
         pargs = parse_args(args)
+        __configparser__.read(pargs.config)
         capture_traffic(pargs)
     except KeyboardInterrupt:
        pass
