@@ -1,15 +1,15 @@
 * BLIP
 
-Bid-request Capture Utility (or "Bid Logging In the Pipe" for backronym lovers)
+Bid-Request Capture Utility (or "Bid Logging In the Pipe" for backronym lovers)
 
 ** Description
 
-*Blip* is a Python utility for capturing network traffic from a
+*blip* is a Python utility for capturing network traffic from a
 network device or [[http://www.tcpdump.org/pcap/pcap.html][pcap]] file, extracting the [[https://github.com/google/protobuf][Protobuf]] or [[http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf][JSON]] payloads,
-and storing them to disk.  Blip uses [[https://github.com/CoreSecurity/pcapy][Pcapy]], a fast libpcap interface
+and storing them to disk. *blip* uses [[https://github.com/CoreSecurity/pcapy][pcapy]], a fast libpcap interface
 and [[https://github.com/kbandla/dpkt][dpkt]], a fast and simple packet manipulation library.
 
-*Blip* also includes a pretty-printer named ~blip_showdb~, which can
+*blip* also includes a pretty-printer named ~blip_showdb~, which can
 read and print ~blip~'s binary output.
 
 ** Setup Requirements
@@ -21,14 +21,37 @@ cd "$REPOPATH" # Where $REPOPATH is the path to the blip repository.
 sudo python3 setup.py install
 #+END_SRC
 
-Pcapy (libpcap) requires root privileges (or the appropriate
+~pcapy~ (libpcap) requires root privileges (or the appropriate
 permissions); we recommend requesting ~sudo~ permissions from your
 local system administrator.
 
+**** Configuration File
+
+~blip~ requires a configuration file to filter through received
+packets and determine whether they're valid requests or not. This file
+is passed via command line arguments.
+
+Example file: *config.ini*
+#+BEGIN_EXAMPLE
+[EXCHANGES]
+/requests/bob = 1
+/requests/alice = 2
+/requests/eve = 3
+#+END_EXAMPLE
+/Note: The name of the file is not important./
+
+This file defines three valid exchanges identified by path and the
+numeric ID correspondingly assigned in the binary output format. These
+are evaluated at runtime and should not be modified while they are
+being used.
+
+There can be up to 255 entries as the binary output format stores
+exchange IDs as ~uint8~ values.
+
 **** External Dependencies
 
-blip requires the ~libpcap~ development files to filter packets from a
-network device or PCAP file. It also requires ~gcc~ to compile the
+~blip~ requires the ~libpcap~ development files to filter packets from
+a network device or PCAP file. It also requires ~gcc~ to compile the
 interface between Python and ~libpcap~.
 
 *** Recommended Setup
@@ -71,14 +94,14 @@ administrative or root permissions would work just as well.
 
 *Example 1*
 #+BEGIN_SRC sh
-sudo bin/blip -d wlp4s0 -o /tmp/output.bin
+sudo bin/blip -c config.ini -d wlp4s0 -o /tmp/output.bin
 #+END_SRC
 This command captures packets from wlp4s0 (a wireless device) and
 writes the extracted data to ~/tmp/output.bin~.
 
 *Example 2*
 #+BEGIN_SRC sh
-sudo bin/blip -d wlp4s0 | pv > /tmp/output.bin
+sudo bin/blip -c config.ini -d wlp4s0 | pv > /tmp/output.bin
 #+END_SRC
 This command captures packets from wlp4s0 (a wireless device),
 pipes the output through pv (to display a progress bar) and
@@ -86,7 +109,7 @@ writes the extracted data to ~/tmp/output.bin~.
 
 *Example 3*
 #+BEGIN_SRC sh
-sudo bin/blip -d wlp4s0 -o /tmp/output.bin -f "dst port 80"
+sudo bin/blip -c config.ini -d wlp4s0 -o /tmp/output.bin -f "dst port 80"
 #+END_SRC
 This command captures packets with a destination equal to port
 80, and writes the extracted data to ~/tmp/output.bin~. Any valid [[https://biot.com/capstats/bpf.html][BPF
@@ -94,7 +117,7 @@ syntax]] expression should be compatible with the program.
 
 *Example 4*
 #+BEGIN_SRC sh
-sudo bin/blip -d wlp4s0 -o /tmp/output.bin -l 3
+sudo bin/blip -c config.ini -d wlp4s0 -o /tmp/output.bin -l 3
 #+END_SRC
 This command captures 3 packets from wlp4s0 (a wireless device)
 and writes the extracted data to ~/tmp/output.bin~. (A limit of zero
@@ -102,7 +125,19 @@ means unlimited capture, which is the default.)
 
 *Example 5*
 #+BEGIN_SRC sh
-sudo bin/blip -p /tmp/input.pcap -o /tmp/output.bin
+sudo bin/blip -c config1.ini config2.ini -p /tmp/input.pcap -o /tmp/output.bin
 #+END_SRC
-This command reads packets from the file ~/tmp/input.pcap~ and
-writes the extracted data to ~/tmp/output.bin~.
+This command reads packets from the file ~/tmp/input.pcap~ and writes
+the extracted data to ~/tmp/output.bin~. It also demonstrates it is
+possible to use more than a single configuration file.
+
+*Example 6*
+#+BEGIN_SRC sh
+sudo bin/blip -c config.ini -p /tmp/input.pcap | blip_showdb -t | head
+#+END_SRC
+This command reads packets from the file ~/tmp/input.pcap~ and writes
+them to stdout piping them into ~blip_showdb~ stdin, which then prints
+out a truncated version of the binary output's human-readable form. In
+this case the ~head~ command ensures only the first few lines of
+output will be visible, after which program execution terminates
+normally.
