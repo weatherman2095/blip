@@ -49,7 +49,7 @@ def read_record(fd):
     """
     header = fd.read(BlipRecord.converter.size)
     try:
-        (magic, exchange, length, payload_type) = BlipRecord.converter.unpack(header)
+        magic, exchange, length, payload_type = BlipRecord.converter.unpack(header)
     except struct_error:
         raise IncorrectLengthException()
 
