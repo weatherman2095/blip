@@ -43,6 +43,10 @@ class BlipRecord():
         return "<Record: Exchange={}, Type={}, Length={}, Payload={}>".format(
             self.exchange, self.payload_type, len(self.payload), self.payload)
 
+    def __str__(self):
+        return "<Record: Exchange={}, Type={}, Length={}, Payload={}>".format(
+            self.exchange, self.payload_type, len(self.payload), "...")
+
 def read_record(fd):
     """
     Read a Record from a file handle.
