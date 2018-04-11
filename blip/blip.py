@@ -7,6 +7,7 @@ import dpkt
 
 # Standard Library imports
 from sys import argv, stdout, stderr, exit as sys_exit
+from os.path import isfile as os_isfile
 from re import compile as re_compile
 from traceback import print_exc
 from functools import partial
@@ -53,7 +54,7 @@ Keyword Arguments:
                            metavar='FILE', help="Write binary output to FILE instead of stdout",
                            default=stdout.buffer)
     argparser.add_argument('--limit', '-l', type=int, metavar="NUM", help="Only capture NUM packets", default=0)
-    argparser.add_argument('--config','-c', type=str, nargs="+", metavar="FILE", help="Configuration file(s) to use.", default=[], required=True)
+    argparser.add_argument('--config','-c', type=str, nargs="+", metavar="FILE", help="Configuration file(s) to use.", required=True)
     argparser.add_argument('--version', '-v', action='version', version="{} {}".format('%(prog)s', __version__))
 
     parsed = argparser.parse_args(args) if args is not None else argparser.parse_args() # Allow REPL debugging with arg lists
@@ -200,11 +201,26 @@ def capture_traffic(pargs):
         reader.setfilter(pargs.filter)
         reader.loop(pargs.limit, callback)
 
+def manage_config(files):
+    """Update the __configparser__ using the passed files.
+
+Keyword Arguments:
+    files -- List of strings representing paths or filenames"""
+    if not files or not all(os_isfile(x) for x in files):
+        stderr.write("One or more of the files passed as argument for config do not exist.\n")
+        sys_exit(1)
+
+    try:
+        __configparser__.read(files)
+    except configparser.Error as e:
+        stderr.write("Error: {}\n".format(e.message))
+        sys_exit(1)
+
 def main(args=None):
     """blip main entry point, provides all functionality"""
     try:
         pargs = parse_args(args)
-        __configparser__.read(pargs.config)
+        manage_config(pargs.config)
         capture_traffic(pargs)
     except KeyboardInterrupt:
        pass
