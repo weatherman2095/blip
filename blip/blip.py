@@ -176,7 +176,7 @@ Keyword Arguments:
     """
     try:
         protobuf = BidRequest.FromString(http_body)
-        return PROTOBUF # Protobuf output = 1
+        return PROTOBUF
     except (DecodeError, TypeError):
         __logger__.debug("Failed to find valid protobuf payload.")
         return None
@@ -253,20 +253,16 @@ def manage_config(files):
 
 Keyword Arguments:
     files -- List of strings representing paths or filenames"""
-    if not files or not all(os_isfile(x) for x in files):
-        stderr.write("One or more of the files passed as argument for config do not exist.\n")
-        sys_exit(1)
 
-    try:
-        __configparser__.read(files)
-    except configparser.Error as e:
-        stderr.write("Error: {}\n".format(e.message))
-        sys_exit(1)
+    if not files or not all(os_isfile(x) for x in files):
+        raise configparser.Error("One or more of the files passed as argument for config do not exist.\n")
+
+    __configparser__.read(files)
 
 def main(args=None):
     """blip main entry point, provides all functionality"""
 
-    exit_code = 0
+    exit_code = 1
     try:
         pargs = parse_args(args)
         manage_config(pargs.config)
@@ -276,11 +272,13 @@ def main(args=None):
         capture_traffic(pargs)
     except KeyboardInterrupt:
         __logger__.debug("Program shutdown via KeyboardInterrupt.")
+    except configparser.Error as e:
+        stderr.write("Error: {}\n".format(e.message)) # user-visible error
     except Exception:
         print_exc(file=stderr)
-        exit_code = 1
     else:
         __logger__.info("Program finished without any errors.")
+        exit_code = 0
     finally:
         logging.shutdown()
 
