@@ -83,7 +83,6 @@ method is deprecated due to the availability of better tooling via
 pip3 install -r blip/requirements.txt
 #+END_SRC
 
-
 ** Examples
 
 /Warning: Each example assumes your shell is within the virtualenv's
@@ -141,3 +140,22 @@ out a truncated version of the binary output's human-readable form. In
 this case the ~head~ command ensures only the first few lines of
 output will be visible, after which program execution terminates
 normally.
+** Debugging
+
+To assist with debugging, ~blip~ generates log files highlighting its
+actions. By default, only ~WARNING~-leveled messages or higher are
+logged. The resulting logs are written to a file named along the lines
+of =/blip.blip_.+\.log/= in your temporary folder.
+
+It is possible to change the debugging level and output file via
+command line flags. It is *not recommended* to use ~stdout~ as a
+logging output. A debug level of ~DEBUG~ is recommended for best
+results.
+
+The valid debug levels are listed in ~blip~'s help menu on using an
+invalid option. Not all of these have a visible effect on ~blip~'s
+execution.
+
+#+BEGIN_SRC sh
+bin/blip -L stuff
+#+END_SRC

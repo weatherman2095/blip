@@ -265,6 +265,8 @@ Keyword Arguments:
 
 def main(args=None):
     """blip main entry point, provides all functionality"""
+
+    exit_code = 0
     try:
         pargs = parse_args(args)
         manage_config(pargs.config)
@@ -274,13 +276,15 @@ def main(args=None):
         capture_traffic(pargs)
     except KeyboardInterrupt:
         __logger__.debug("Program shutdown via KeyboardInterrupt.")
-        pass
     except Exception:
         print_exc(file=stderr)
-        sys_exit(1)
+        exit_code = 1
     else:
         __logger__.info("Program finished without any errors.")
-        sys_exit(0)
+    finally:
+        logging.shutdown()
+
+    sys_exit(exit_code)
 
 if __name__ == '__main__':
     main()
