@@ -158,9 +158,9 @@ Keyword Arguments:
     http_body -- The raw body of an http request or response
 
     """
-    raw_json = http_body
     try:
-        json_out = json_loads(raw_json.decode())
+        raw_json_text = http_body.decode()
+        json_out = json_loads(raw_json_text)
         return JSON
     except (JSONDecodeError, UnicodeDecodeError, TypeError, AttributeError):
         __logger__.debug("Failed to find valid json payload.")
