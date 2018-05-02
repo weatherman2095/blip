@@ -18,7 +18,6 @@ from blip.constants import MAGIC
 
 # Proper Signal Handling
 from signal import signal, SIGPIPE, SIG_DFL
-signal(SIGPIPE, SIG_DFL)
 
 class IncorrectMagicException(Exception): pass
 class IncorrectLengthException(Exception): pass
@@ -101,6 +100,7 @@ Ouptut -- is stdout by default unless changed by arguments
 
 ---
 Program entry_point for blip_showdb"""
+    signal(SIGPIPE, SIG_DFL)
     try:
         parsed = parse_args_cli()
         with parsed.input as fd:

@@ -34,7 +34,6 @@ except ImportError:
 
 # Proper Signal Handling
 from signal import signal, SIGPIPE, SIG_DFL
-signal(SIGPIPE, SIG_DFL)
 
 __logger__ = logging.getLogger(__name__)
 __version__ = pkg_resources.require("blip")[0].version
@@ -261,7 +260,7 @@ Keyword Arguments:
 
 def main(args=None):
     """blip main entry point, provides all functionality"""
-
+    signal(SIGPIPE, SIG_DFL)
     exit_code = 1
     try:
         pargs = parse_args(args)
