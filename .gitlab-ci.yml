@@ -1,0 +1,13 @@
+image: python:3.6
+
+pages:
+  before_script:
+    - python3 setup.py install
+    - pip3 install -e .[docs]
+  script:
+    - make -C doc-sphinx html && mkdir public && cp -r doc-sphinx/_build/html/* public
+  artifacts:
+    paths:
+    - public
+  # only:
+  # - master
