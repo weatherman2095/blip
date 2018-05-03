@@ -1,5 +1,0 @@
-protobuf>=3.0.0
-pcapy
-dpkt
-simplejson
-

@@ -1,0 +1,259 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>API Documentation &#8212; blip 1.0.0 documentation</title>
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Welcome to blip’s documentation!" href="index.html" /> 
+  </head><body>
+      <div class="header" role="banner"><h1 class="heading"><a href="index.html">
+          <span>blip 1.0.0 documentation</span></a></h1>
+        <h2 class="heading"><span>API Documentation</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="index.html">Welcome to blip’s documentation!</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="module-blip.blip">
+<span id="api-documentation"></span><h1>API Documentation<a class="headerlink" href="#module-blip.blip" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="blip.blip.capture_callback">
+<code class="descclassname">blip.blip.</code><code class="descname">capture_callback</code><span class="sig-paren">(</span><em>destination</em>, <em>header</em>, <em>content</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blip/blip.html#capture_callback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.blip.capture_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function which will be called on each packet capture which matches the filters.</p>
+<p>It is meant to call other processing functions to transform
+packets into the right binary datastructures before writing them
+to output.</p>
+<p>Keyword Arguments:</p>
+<p>destination – File-like object to which the output is written
+header – pcap capture header
+content – pcap capture data</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="blip.blip.capture_traffic">
+<code class="descclassname">blip.blip.</code><code class="descname">capture_traffic</code><span class="sig-paren">(</span><em>pargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blip/blip.html#capture_traffic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.blip.capture_traffic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initiate capture of data from a device or pcap file</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="blip.blip.create_logfile">
+<code class="descclassname">blip.blip.</code><code class="descname">create_logfile</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/blip/blip.html#create_logfile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.blip.create_logfile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new temporary file for logs and return its filename</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="blip.blip.main">
+<code class="descclassname">blip.blip.</code><code class="descname">main</code><span class="sig-paren">(</span><em>args=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blip/blip.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.blip.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>blip main entry point, provides all functionality</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="blip.blip.manage_config">
+<code class="descclassname">blip.blip.</code><code class="descname">manage_config</code><span class="sig-paren">(</span><em>files</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blip/blip.html#manage_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.blip.manage_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the __configparser__ using the passed files.</p>
+<dl class="docutils">
+<dt>Keyword Arguments:</dt>
+<dd>files – List of strings representing paths or filenames</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="blip.blip.parse_args">
+<code class="descclassname">blip.blip.</code><code class="descname">parse_args</code><span class="sig-paren">(</span><em>args=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blip/blip.html#parse_args"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.blip.parse_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse arguments parsed to the function and return parsed argparse object.</p>
+<dl class="docutils">
+<dt>Keyword Arguments:</dt>
+<dd>args – An array of string arguments, much like sys.argv passes</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="blip.blip.setup_log">
+<code class="descclassname">blip.blip.</code><code class="descname">setup_log</code><span class="sig-paren">(</span><em>level</em>, <em>logfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blip/blip.html#setup_log"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.blip.setup_log" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup a logger to provide debugging information</p>
+<dl class="docutils">
+<dt>Keyword Arguments:</dt>
+<dd>level – Debug level to use, from [‘debug’, ‘info’, ‘warning’, ‘error’, ‘critical’]
+logfile – Name of the logfile.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="blip.blip.try_extract_http">
+<code class="descclassname">blip.blip.</code><code class="descname">try_extract_http</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blip/blip.html#try_extract_http"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.blip.try_extract_http" title="Permalink to this definition">¶</a></dt>
+<dd><p>Attempt to extract an HTTP request from raw bytes.
+Return None on failure.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="blip.blip.try_extract_tcp">
+<code class="descclassname">blip.blip.</code><code class="descname">try_extract_tcp</code><span class="sig-paren">(</span><em>eth_payload</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blip/blip.html#try_extract_tcp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.blip.try_extract_tcp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Attempt to extract a TCP dictionary from raw bytes.
+Return None on failure.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="blip.blip.try_get_exchange">
+<code class="descclassname">blip.blip.</code><code class="descname">try_get_exchange</code><span class="sig-paren">(</span><em>exchange_path</em>, <em>matcher=re.compile('/requests/[a-zA-Z0-9]+')</em>, <em>configparse=&lt;configparser.ConfigParser object&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blip/blip.html#try_get_exchange"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.blip.try_get_exchange" title="Permalink to this definition">¶</a></dt>
+<dd><p>Attempt to find an exchange id for a provided exchange path.
+Return None on failure.</p>
+<dl class="docutils">
+<dt>Keyword Arguments:</dt>
+<dd>exchange_path – HTTP path possibly corresponding to a valid exchange id
+matcher – Compiled SRE Pattern used to sanitize paths.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="blip.blip.try_parse_json">
+<code class="descclassname">blip.blip.</code><code class="descname">try_parse_json</code><span class="sig-paren">(</span><em>http_body</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blip/blip.html#try_parse_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.blip.try_parse_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Attempt to parse as JSON and return the type id.
+Return None on failure.</p>
+<dl class="docutils">
+<dt>Keyword Arguments:</dt>
+<dd>http_body – The raw body of an http request or response</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="blip.blip.try_parse_protobuf">
+<code class="descclassname">blip.blip.</code><code class="descname">try_parse_protobuf</code><span class="sig-paren">(</span><em>http_body</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blip/blip.html#try_parse_protobuf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.blip.try_parse_protobuf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Attempt to parse as protobuf as return the type id.
+Return None on failure.</p>
+<dl class="docutils">
+<dt>Keyword Arguments:</dt>
+<dd>http_body – The raw body of an http request or response</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="blip.blip.write_output">
+<code class="descclassname">blip.blip.</code><code class="descname">write_output</code><span class="sig-paren">(</span><em>path</em>, <em>payload_type</em>, <em>payload</em>, <em>fd</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blip/blip.html#write_output"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.blip.write_output" title="Permalink to this definition">¶</a></dt>
+<dd><p>Take the request path, payload_type, raw payload and write them to
+output file-descriptor</p>
+<dl class="docutils">
+<dt>Keyword Arguments:</dt>
+<dd>path – Decoded payload, can be any format defined in /docs
+payload_type – Integer which determines the payload format, as define in /docs
+payload – Raw binary payload, can be any format defined in /docs
+fd – File Descriptor to write output to</dd>
+</dl>
+</dd></dl>
+
+<span class="target" id="module-blip.encoding"></span><dl class="class">
+<dt id="blip.encoding.BlipRecord">
+<em class="property">class </em><code class="descclassname">blip.encoding.</code><code class="descname">BlipRecord</code><span class="sig-paren">(</span><em>exchange</em>, <em>payload_type</em>, <em>payload</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blip/encoding.html#BlipRecord"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.encoding.BlipRecord" title="Permalink to this definition">¶</a></dt>
+<dd><p>Container class for blip record metadata.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="blip.encoding.IncorrectLengthException">
+<em class="property">exception </em><code class="descclassname">blip.encoding.</code><code class="descname">IncorrectLengthException</code><a class="reference internal" href="_modules/blip/encoding.html#IncorrectLengthException"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.encoding.IncorrectLengthException" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="exception">
+<dt id="blip.encoding.IncorrectMagicException">
+<em class="property">exception </em><code class="descclassname">blip.encoding.</code><code class="descname">IncorrectMagicException</code><a class="reference internal" href="_modules/blip/encoding.html#IncorrectMagicException"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.encoding.IncorrectMagicException" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="exception">
+<dt id="blip.encoding.PayloadTooShortException">
+<em class="property">exception </em><code class="descclassname">blip.encoding.</code><code class="descname">PayloadTooShortException</code><a class="reference internal" href="_modules/blip/encoding.html#PayloadTooShortException"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.encoding.PayloadTooShortException" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="blip.encoding.format_output_bytes">
+<code class="descclassname">blip.encoding.</code><code class="descname">format_output_bytes</code><span class="sig-paren">(</span><em>record</em>, <em>truncate</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blip/encoding.html#format_output_bytes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.encoding.format_output_bytes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a byte-string representation of a BlipRecord.
+If <cite>truncate</cite> is True, the payload is replaced with the
+string “…”</p>
+<p>Keyword Arguments:
+record – BlipRecord object
+truncate – Boolean argument which causes truncation on True</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="blip.encoding.parse_args_cli">
+<code class="descclassname">blip.encoding.</code><code class="descname">parse_args_cli</code><span class="sig-paren">(</span><em>args=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blip/encoding.html#parse_args_cli"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.encoding.parse_args_cli" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse arguments parsed to the function and return parsed argparse object.</p>
+<dl class="docutils">
+<dt>Keyword Arguments:</dt>
+<dd>args – An array of string arguments, much like sys.argv passes</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="blip.encoding.print_contents_cli">
+<code class="descclassname">blip.encoding.</code><code class="descname">print_contents_cli</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/blip/encoding.html#print_contents_cli"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.encoding.print_contents_cli" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads the content of a provided input and writes a string
+representation of all BlipRecord objects found to output</p>
+<p>Input – is stdin by default unless changed by arguments
+Ouptut – is stdout by default unless changed by arguments</p>
+<p>—
+Program entry_point for blip_showdb</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="blip.encoding.read_record">
+<code class="descclassname">blip.encoding.</code><code class="descname">read_record</code><span class="sig-paren">(</span><em>fd</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blip/encoding.html#read_record"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.encoding.read_record" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a Record from a file handle.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="blip.encoding.read_record_file">
+<code class="descclassname">blip.encoding.</code><code class="descname">read_record_file</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blip/encoding.html#read_record_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.encoding.read_record_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a generator for all records in <cite>filename</cite> as the context value.</p>
+<p>Properly disposes of the file context as required.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="blip.encoding.records_from_fd">
+<code class="descclassname">blip.encoding.</code><code class="descname">records_from_fd</code><span class="sig-paren">(</span><em>fd</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blip/encoding.html#records_from_fd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.encoding.records_from_fd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Yield all BlipRecords from the provided file handle.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="blip.encoding.write_record">
+<code class="descclassname">blip.encoding.</code><code class="descname">write_record</code><span class="sig-paren">(</span><em>record</em>, <em>fd</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blip/encoding.html#write_record"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.encoding.write_record" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write a Record to a file handle.</p>
+</dd></dl>
+
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="index.html">Welcome to blip’s documentation!</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, weatherman2095.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.4.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,337 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>blip.blip &#8212; blip 1.0.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+      <div class="header" role="banner"><h1 class="heading"><a href="../../index.html">
+          <span>blip 1.0.0 documentation</span></a></h1>
+        <h2 class="heading"><span>blip.blip</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        <a class="uplink" href="../../index.html">Contents</a>
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <h1>Source code for blip.blip</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+
+<span class="c1"># External Libraries imports</span>
+<span class="kn">from</span> <span class="nn">google.protobuf.message</span> <span class="k">import</span> <span class="n">DecodeError</span>
+<span class="kn">import</span> <span class="nn">pcapy</span>
+<span class="kn">import</span> <span class="nn">dpkt</span>
+
+<span class="c1"># Standard Library imports</span>
+<span class="kn">from</span> <span class="nn">sys</span> <span class="k">import</span> <span class="n">argv</span><span class="p">,</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span><span class="p">,</span> <span class="n">exit</span> <span class="k">as</span> <span class="n">sys_exit</span>
+<span class="kn">from</span> <span class="nn">tempfile</span> <span class="k">import</span> <span class="n">NamedTemporaryFile</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="k">import</span> <span class="n">isfile</span> <span class="k">as</span> <span class="n">os_isfile</span>
+<span class="kn">from</span> <span class="nn">re</span> <span class="k">import</span> <span class="nb">compile</span> <span class="k">as</span> <span class="n">re_compile</span>
+<span class="kn">from</span> <span class="nn">traceback</span> <span class="k">import</span> <span class="n">print_exc</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">partial</span>
+<span class="kn">import</span> <span class="nn">pkg_resources</span>  <span class="c1"># part of setuptools</span>
+<span class="kn">import</span> <span class="nn">configparser</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">struct</span>
+
+<span class="c1"># Project Imports</span>
+<span class="kn">from</span> <span class="nn">blip.constants</span> <span class="k">import</span> <span class="n">MAGIC</span><span class="p">,</span> <span class="n">JSON</span><span class="p">,</span> <span class="n">PROTOBUF</span>
+<span class="kn">from</span> <span class="nn">blip.protobuf.doubleclick_proto_pb2</span> <span class="k">import</span> <span class="n">BidRequest</span>
+<span class="kn">from</span> <span class="nn">blip.encoding</span> <span class="k">import</span> <span class="n">BlipRecord</span><span class="p">,</span> <span class="n">write_record</span>
+
+<span class="c1"># Retrocompatiblity fix</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">json.decoder</span> <span class="k">import</span> <span class="n">JSONDecodeError</span>
+    <span class="kn">from</span> <span class="nn">json</span> <span class="k">import</span> <span class="n">loads</span> <span class="k">as</span> <span class="n">json_loads</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+     <span class="c1"># Python 3.4 doesn&#39;t have JSONDecodeError</span>
+    <span class="kn">from</span> <span class="nn">simplejson.decoder</span> <span class="k">import</span> <span class="n">JSONDecodeError</span>
+    <span class="kn">from</span> <span class="nn">simplejson</span> <span class="k">import</span> <span class="n">loads</span> <span class="k">as</span> <span class="n">json_loads</span>
+
+<span class="c1"># Proper Signal Handling</span>
+<span class="kn">from</span> <span class="nn">signal</span> <span class="k">import</span> <span class="n">signal</span><span class="p">,</span> <span class="n">SIGPIPE</span><span class="p">,</span> <span class="n">SIG_DFL</span>
+
+<span class="n">__logger__</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">__version__</span> <span class="o">=</span> <span class="n">pkg_resources</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s2">&quot;blip&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">version</span>
+<span class="n">__configparser__</span> <span class="o">=</span> <span class="n">configparser</span><span class="o">.</span><span class="n">ConfigParser</span><span class="p">()</span>
+
+<div class="viewcode-block" id="parse_args"><a class="viewcode-back" href="../../api.html#blip.blip.parse_args">[docs]</a><span class="k">def</span> <span class="nf">parse_args</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parse arguments parsed to the function and return parsed argparse object.</span>
+
+<span class="sd">Keyword Arguments:</span>
+<span class="sd">    args -- An array of string arguments, much like sys.argv passes&quot;&quot;&quot;</span>
+    <span class="n">argparser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">prog</span><span class="o">=</span><span class="s2">&quot;blip&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Packet sniffing and pcap-reading utility to extract bid-request info and output either to stdout or to a file.&quot;</span><span class="p">)</span>
+
+    <span class="n">device_group</span> <span class="o">=</span> <span class="n">argparser</span><span class="o">.</span><span class="n">add_mutually_exclusive_group</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">device_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--device&#39;</span><span class="p">,</span> <span class="s1">&#39;-d&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;DEV&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Device from which to capture input&quot;</span><span class="p">)</span>
+    <span class="n">device_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--pcap-input&#39;</span><span class="p">,</span> <span class="s1">&#39;-p&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;CAPFILE&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;PCAP file from which to read input&quot;</span><span class="p">)</span>
+
+    <span class="n">argparser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--filter&#39;</span><span class="p">,</span> <span class="s1">&#39;-f&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Berkeley Packet Filter string to optionally apply on all sniffing&quot;</span><span class="p">)</span>
+    <span class="n">argparser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--output&#39;</span><span class="p">,</span> <span class="s1">&#39;-O&#39;</span><span class="p">,</span>
+                           <span class="nb">type</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">FileType</span><span class="p">(</span><span class="s1">&#39;wb&#39;</span><span class="p">),</span>
+                           <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;FILE&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Write binary output to FILE instead of stdout&quot;</span><span class="p">,</span>
+                           <span class="n">default</span><span class="o">=</span><span class="n">stdout</span><span class="o">.</span><span class="n">buffer</span><span class="p">)</span>
+    <span class="n">argparser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--limit&#39;</span><span class="p">,</span> <span class="s1">&#39;-l&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;NUM&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Only capture NUM packets&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">argparser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--log-level&#39;</span><span class="p">,</span> <span class="s1">&#39;-L&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;LEVEL&#39;</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;debug&#39;</span><span class="p">,</span> <span class="s1">&#39;info&#39;</span><span class="p">,</span> <span class="s1">&#39;warning&#39;</span><span class="p">,</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span> <span class="s1">&#39;critical&#39;</span><span class="p">],</span>
+                           <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Log level to filter to from program logging output.&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;warning&quot;</span><span class="p">)</span>
+    <span class="n">argparser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--log-output&#39;</span><span class="p">,</span> <span class="s1">&#39;-o&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+    <span class="n">argparser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--config&#39;</span><span class="p">,</span><span class="s1">&#39;-c&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;+&quot;</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;FILE&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Configuration file(s) to use.&quot;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">argparser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--version&#39;</span><span class="p">,</span> <span class="s1">&#39;-v&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;version&#39;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%(prog)s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">__version__</span><span class="p">))</span>
+
+    <span class="n">parsed</span> <span class="o">=</span> <span class="n">argparser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="k">if</span> <span class="n">args</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">argparser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span> <span class="c1"># Allow REPL debugging with arg lists</span>
+    <span class="k">if</span> <span class="n">parsed</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">stdout</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+        <span class="n">parsed</span><span class="o">.</span><span class="n">output</span> <span class="o">=</span> <span class="n">stdout</span><span class="o">.</span><span class="n">buffer</span> <span class="c1"># Prevent stdout with &#39;w&#39; rather than &#39;wb&#39; permission issues</span>
+
+    <span class="k">return</span> <span class="n">parsed</span></div>
+
+<div class="viewcode-block" id="capture_callback"><a class="viewcode-back" href="../../api.html#blip.blip.capture_callback">[docs]</a><span class="k">def</span> <span class="nf">capture_callback</span><span class="p">(</span><span class="n">destination</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function which will be called on each packet capture which matches the filters.</span>
+
+<span class="sd">    It is meant to call other processing functions to transform</span>
+<span class="sd">    packets into the right binary datastructures before writing them</span>
+<span class="sd">    to output.</span>
+
+<span class="sd">    Keyword Arguments:</span>
+
+<span class="sd">    destination -- File-like object to which the output is written</span>
+<span class="sd">    header -- pcap capture header</span>
+<span class="sd">    content -- pcap capture data</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">tcp_pkt</span> <span class="o">=</span> <span class="n">try_extract_tcp</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">tcp_pkt</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span>
+
+    <span class="n">http_pkt</span> <span class="o">=</span> <span class="n">try_extract_http</span><span class="p">(</span><span class="n">tcp_pkt</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">http_pkt</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span>
+
+    <span class="n">path</span> <span class="o">=</span> <span class="n">http_pkt</span><span class="o">.</span><span class="n">uri</span>
+    <span class="k">if</span> <span class="n">path</span> <span class="o">==</span> <span class="s1">&#39;/&#39;</span><span class="p">:</span>
+        <span class="n">__logger__</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Dropping packet with &#39;/&#39; path.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="c1"># All valid BidRequests have a path</span>
+
+    <span class="n">req_body</span> <span class="o">=</span> <span class="n">http_pkt</span><span class="o">.</span><span class="n">body</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">req_body</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">__logger__</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Dropping http packet with empty body.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="c1"># Improper request</span>
+
+    <span class="n">payload_type</span> <span class="o">=</span> <span class="n">try_parse_json</span><span class="p">(</span><span class="n">req_body</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">payload_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">payload_type</span> <span class="o">=</span> <span class="n">try_parse_protobuf</span><span class="p">(</span><span class="n">req_body</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">payload_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="c1"># Invalid payload</span>
+
+    <span class="n">write_output</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">payload_type</span><span class="p">,</span> <span class="n">req_body</span><span class="p">,</span> <span class="n">destination</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="write_output"><a class="viewcode-back" href="../../api.html#blip.blip.write_output">[docs]</a><span class="k">def</span> <span class="nf">write_output</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">payload_type</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="n">fd</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Take the request path, payload_type, raw payload and write them to</span>
+<span class="sd">output file-descriptor</span>
+
+<span class="sd">Keyword Arguments:</span>
+<span class="sd">    path -- Decoded payload, can be any format defined in /docs</span>
+<span class="sd">    payload_type -- Integer which determines the payload format, as define in /docs</span>
+<span class="sd">    payload -- Raw binary payload, can be any format defined in /docs</span>
+<span class="sd">    fd -- File Descriptor to write output to</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">exchange</span> <span class="o">=</span> <span class="n">try_get_exchange</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">exchange</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span>
+
+    <span class="n">record</span> <span class="o">=</span> <span class="n">BlipRecord</span><span class="p">(</span><span class="n">exchange</span><span class="p">,</span> <span class="n">payload_type</span><span class="p">,</span> <span class="n">payload</span><span class="p">)</span>
+    <span class="n">__logger__</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Writing record to disk: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">record</span><span class="p">))</span>
+
+    <span class="n">write_record</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">fd</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="try_get_exchange"><a class="viewcode-back" href="../../api.html#blip.blip.try_get_exchange">[docs]</a><span class="k">def</span> <span class="nf">try_get_exchange</span><span class="p">(</span><span class="n">exchange_path</span><span class="p">,</span>
+                     <span class="n">matcher</span><span class="o">=</span><span class="n">re_compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;/requests/[a-zA-Z0-9]+&quot;</span><span class="p">),</span>
+                     <span class="n">configparse</span><span class="o">=</span><span class="n">__configparser__</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Attempt to find an exchange id for a provided exchange path.</span>
+<span class="sd">Return None on failure.</span>
+
+<span class="sd">Keyword Arguments:</span>
+<span class="sd">    exchange_path -- HTTP path possibly corresponding to a valid exchange id</span>
+<span class="sd">    matcher -- Compiled SRE Pattern used to sanitize paths.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">sanitized_exchange</span> <span class="o">=</span> <span class="n">matcher</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">exchange_path</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">exchange</span> <span class="o">=</span> <span class="n">configparse</span><span class="p">[</span><span class="s1">&#39;EXCHANGES&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">getint</span><span class="p">(</span><span class="n">sanitized_exchange</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">exchange</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">):</span>
+        <span class="n">__logger__</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Fail to find exchange id for: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">exchange_path</span><span class="p">))</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="try_parse_json"><a class="viewcode-back" href="../../api.html#blip.blip.try_parse_json">[docs]</a><span class="k">def</span> <span class="nf">try_parse_json</span><span class="p">(</span><span class="n">http_body</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Attempt to parse as JSON and return the type id.</span>
+<span class="sd">Return None on failure.</span>
+
+<span class="sd">Keyword Arguments:</span>
+<span class="sd">    http_body -- The raw body of an http request or response</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">raw_json_text</span> <span class="o">=</span> <span class="n">http_body</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+        <span class="n">json_out</span> <span class="o">=</span> <span class="n">json_loads</span><span class="p">(</span><span class="n">raw_json_text</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">JSON</span>
+    <span class="k">except</span> <span class="p">(</span><span class="n">JSONDecodeError</span><span class="p">,</span> <span class="ne">UnicodeDecodeError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">):</span>
+        <span class="n">__logger__</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Failed to find valid json payload.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="try_parse_protobuf"><a class="viewcode-back" href="../../api.html#blip.blip.try_parse_protobuf">[docs]</a><span class="k">def</span> <span class="nf">try_parse_protobuf</span><span class="p">(</span><span class="n">http_body</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Attempt to parse as protobuf as return the type id.</span>
+<span class="sd">Return None on failure.</span>
+
+<span class="sd">Keyword Arguments:</span>
+<span class="sd">    http_body -- The raw body of an http request or response</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">protobuf</span> <span class="o">=</span> <span class="n">BidRequest</span><span class="o">.</span><span class="n">FromString</span><span class="p">(</span><span class="n">http_body</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">PROTOBUF</span>
+    <span class="k">except</span> <span class="p">(</span><span class="n">DecodeError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
+        <span class="n">__logger__</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Failed to find valid protobuf payload.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="try_extract_tcp"><a class="viewcode-back" href="../../api.html#blip.blip.try_extract_tcp">[docs]</a><span class="k">def</span> <span class="nf">try_extract_tcp</span><span class="p">(</span><span class="n">eth_payload</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Attempt to extract a TCP dictionary from raw bytes.</span>
+<span class="sd">Return None on failure.&quot;&quot;&quot;</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">eth</span> <span class="o">=</span> <span class="n">dpkt</span><span class="o">.</span><span class="n">ethernet</span><span class="o">.</span><span class="n">Ethernet</span><span class="p">(</span><span class="n">eth_payload</span><span class="p">)</span>
+        <span class="n">ip</span> <span class="o">=</span> <span class="n">eth</span><span class="o">.</span><span class="n">ip</span>
+        <span class="n">tcp</span> <span class="o">=</span> <span class="n">ip</span><span class="o">.</span><span class="n">tcp</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">__logger__</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Failed to extract packet information on packet.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">return</span> <span class="n">tcp</span></div>
+
+<div class="viewcode-block" id="try_extract_http"><a class="viewcode-back" href="../../api.html#blip.blip.try_extract_http">[docs]</a><span class="k">def</span> <span class="nf">try_extract_http</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Attempt to extract an HTTP request from raw bytes.</span>
+<span class="sd">Return None on failure.&quot;&quot;&quot;</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">req</span> <span class="o">=</span> <span class="n">dpkt</span><span class="o">.</span><span class="n">http</span><span class="o">.</span><span class="n">Request</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">dpkt</span><span class="o">.</span><span class="n">dpkt</span><span class="o">.</span><span class="n">UnpackError</span><span class="p">:</span>
+        <span class="n">__logger__</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Failed to extract http request from tcp packet.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">return</span> <span class="n">req</span></div>
+
+<div class="viewcode-block" id="capture_traffic"><a class="viewcode-back" href="../../api.html#blip.blip.capture_traffic">[docs]</a><span class="k">def</span> <span class="nf">capture_traffic</span><span class="p">(</span><span class="n">pargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Initiate capture of data from a device or pcap file&quot;&quot;&quot;</span>
+    <span class="n">is_dev</span> <span class="o">=</span> <span class="n">pargs</span><span class="o">.</span><span class="n">device</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="k">with</span> <span class="n">pargs</span><span class="o">.</span><span class="n">output</span> <span class="k">as</span> <span class="n">out</span><span class="p">:</span> <span class="c1"># Ensure proper resource disposal</span>
+        <span class="n">callback</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">capture_callback</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span> <span class="c1"># This may or may not lead to more context-switching than closures depending on internal implementation.</span>
+        <span class="n">__logger__</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Capturing from </span><span class="si">{}</span><span class="s2">.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;device&quot;</span> <span class="k">if</span> <span class="n">is_dev</span> <span class="k">else</span> <span class="s2">&quot;pcap&quot;</span><span class="p">))</span>
+
+        <span class="n">reader</span> <span class="o">=</span> <span class="n">pcapy</span><span class="o">.</span><span class="n">open_live</span><span class="p">(</span><span class="n">pargs</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="mi">65535</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span> <span class="k">if</span> <span class="n">is_dev</span> <span class="k">else</span> <span class="n">pcapy</span><span class="o">.</span><span class="n">open_offline</span><span class="p">(</span><span class="n">pargs</span><span class="o">.</span><span class="n">pcap_input</span><span class="p">)</span>
+        <span class="n">reader</span><span class="o">.</span><span class="n">setfilter</span><span class="p">(</span><span class="n">pargs</span><span class="o">.</span><span class="n">filter</span><span class="p">)</span>
+        <span class="n">reader</span><span class="o">.</span><span class="n">loop</span><span class="p">(</span><span class="n">pargs</span><span class="o">.</span><span class="n">limit</span><span class="p">,</span> <span class="n">callback</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="setup_log"><a class="viewcode-back" href="../../api.html#blip.blip.setup_log">[docs]</a><span class="k">def</span> <span class="nf">setup_log</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="n">logfile</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Setup a logger to provide debugging information</span>
+
+<span class="sd">Keyword Arguments:</span>
+<span class="sd">    level -- Debug level to use, from [&#39;debug&#39;, &#39;info&#39;, &#39;warning&#39;, &#39;error&#39;, &#39;critical&#39;]</span>
+<span class="sd">    logfile -- Name of the logfile.&quot;&quot;&quot;</span>
+    <span class="n">vlevel</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">logging</span><span class="p">,</span> <span class="n">level</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span>
+    <span class="n">__logger__</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">vlevel</span><span class="p">)</span>
+
+    <span class="c1"># ensure logfile target exists</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">logfile</span><span class="p">:</span>
+        <span class="n">logfile</span> <span class="o">=</span> <span class="n">create_logfile</span><span class="p">()</span>
+
+    <span class="c1"># create a file handler</span>
+    <span class="n">handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span><span class="n">logfile</span><span class="p">)</span>
+    <span class="n">handler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span> <span class="c1"># ensure handler picks up everything</span>
+
+    <span class="c1"># create a logging format</span>
+    <span class="n">formatter</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1"> - </span><span class="si">%(name)s</span><span class="s1"> - </span><span class="si">%(levelname)s</span><span class="s1"> - </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span>
+
+    <span class="c1"># add the handlers to the logger</span>
+    <span class="n">__logger__</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="create_logfile"><a class="viewcode-back" href="../../api.html#blip.blip.create_logfile">[docs]</a><span class="k">def</span> <span class="nf">create_logfile</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Create a new temporary file for logs and return its filename&quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">_&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="vm">__name__</span><span class="p">),</span><span class="n">suffix</span><span class="o">=</span><span class="s2">&quot;.log&quot;</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span></div>
+
+<div class="viewcode-block" id="manage_config"><a class="viewcode-back" href="../../api.html#blip.blip.manage_config">[docs]</a><span class="k">def</span> <span class="nf">manage_config</span><span class="p">(</span><span class="n">files</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Update the __configparser__ using the passed files.</span>
+
+<span class="sd">Keyword Arguments:</span>
+<span class="sd">    files -- List of strings representing paths or filenames&quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">files</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">os_isfile</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">files</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">configparser</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;One or more of the files passed as argument for config do not exist.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">__configparser__</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">files</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../api.html#blip.blip.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;blip main entry point, provides all functionality&quot;&quot;&quot;</span>
+    <span class="n">signal</span><span class="p">(</span><span class="n">SIGPIPE</span><span class="p">,</span> <span class="n">SIG_DFL</span><span class="p">)</span>
+    <span class="n">exit_code</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">pargs</span> <span class="o">=</span> <span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+        <span class="n">manage_config</span><span class="p">(</span><span class="n">pargs</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+        <span class="n">setup_log</span><span class="p">(</span><span class="n">pargs</span><span class="o">.</span><span class="n">log_level</span><span class="p">,</span> <span class="n">pargs</span><span class="o">.</span><span class="n">log_output</span><span class="p">)</span>
+
+        <span class="n">__logger__</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Run program with arguments: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">pargs</span><span class="p">))</span>
+        <span class="n">capture_traffic</span><span class="p">(</span><span class="n">pargs</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
+        <span class="n">__logger__</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Program shutdown via KeyboardInterrupt.&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">configparser</span><span class="o">.</span><span class="n">Error</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Error: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="p">))</span> <span class="c1"># user-visible error</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="n">print_exc</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="n">stderr</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">__logger__</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Program finished without any errors.&quot;</span><span class="p">)</span>
+        <span class="n">exit_code</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
+
+    <span class="n">sys_exit</span><span class="p">(</span><span class="n">exit_code</span><span class="p">)</span></div>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        <a class="uplink" href="../../index.html">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, weatherman2095.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.4.
+    </div>
+  </body>
+</html>

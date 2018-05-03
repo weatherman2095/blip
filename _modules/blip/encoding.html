@@ -1,0 +1,208 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>blip.encoding &#8212; blip 1.0.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+      <div class="header" role="banner"><h1 class="heading"><a href="../../index.html">
+          <span>blip 1.0.0 documentation</span></a></h1>
+        <h2 class="heading"><span>blip.encoding</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        <a class="uplink" href="../../index.html">Contents</a>
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <h1>Source code for blip.encoding</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">..</span>
+<span class="sd">    Format</span>
+<span class="sd">    ------</span>
+<span class="sd">        File   ::= Record*</span>
+<span class="sd">        Record ::= &lt;Magic: 4&gt; &lt;Exchange Id: 1&gt; &lt;Length: 4&gt; &lt;Type: 1&gt; &lt;Payload: N&gt;</span>
+
+<span class="sd">    Invariants</span>
+<span class="sd">    ----------</span>
+<span class="sd">        Magic  = &quot;BLIP&quot;</span>
+<span class="sd">        Length = N</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">struct</span> <span class="k">import</span> <span class="n">Struct</span><span class="p">,</span> <span class="n">error</span> <span class="k">as</span> <span class="n">struct_error</span>
+<span class="kn">from</span> <span class="nn">sys</span> <span class="k">import</span> <span class="n">stderr</span><span class="p">,</span> <span class="n">exit</span> <span class="k">as</span> <span class="n">sys_exit</span>
+<span class="kn">from</span> <span class="nn">contextlib</span> <span class="k">import</span> <span class="n">contextmanager</span>
+<span class="kn">from</span> <span class="nn">traceback</span> <span class="k">import</span> <span class="n">print_exc</span>
+<span class="kn">from</span> <span class="nn">blip.constants</span> <span class="k">import</span> <span class="n">MAGIC</span>
+
+<span class="c1"># Proper Signal Handling</span>
+<span class="kn">from</span> <span class="nn">signal</span> <span class="k">import</span> <span class="n">signal</span><span class="p">,</span> <span class="n">SIGPIPE</span><span class="p">,</span> <span class="n">SIG_DFL</span>
+
+<div class="viewcode-block" id="IncorrectMagicException"><a class="viewcode-back" href="../../api.html#blip.encoding.IncorrectMagicException">[docs]</a><span class="k">class</span> <span class="nc">IncorrectMagicException</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span> <span class="k">pass</span></div>
+<div class="viewcode-block" id="IncorrectLengthException"><a class="viewcode-back" href="../../api.html#blip.encoding.IncorrectLengthException">[docs]</a><span class="k">class</span> <span class="nc">IncorrectLengthException</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span> <span class="k">pass</span></div>
+<div class="viewcode-block" id="PayloadTooShortException"><a class="viewcode-back" href="../../api.html#blip.encoding.PayloadTooShortException">[docs]</a><span class="k">class</span> <span class="nc">PayloadTooShortException</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span> <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="BlipRecord"><a class="viewcode-back" href="../../api.html#blip.encoding.BlipRecord">[docs]</a><span class="k">class</span> <span class="nc">BlipRecord</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Container class for blip record metadata.&quot;&quot;&quot;</span>
+    <span class="n">converter</span> <span class="o">=</span> <span class="n">Struct</span><span class="p">(</span>
+        <span class="s2">&quot;!&quot;</span>  <span class="c1"># network order</span>
+        <span class="s2">&quot;4s&quot;</span> <span class="c1"># 4-char string: magic number</span>
+        <span class="s2">&quot;B&quot;</span>  <span class="c1"># byte: exchange id</span>
+        <span class="s2">&quot;I&quot;</span>  <span class="c1"># uint32: length of the payload</span>
+        <span class="s2">&quot;B&quot;</span>  <span class="c1"># byte: type (JSON or Protobuf)</span>
+    <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exchange</span><span class="p">,</span> <span class="n">payload_type</span><span class="p">,</span> <span class="n">payload</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exchange</span> <span class="o">=</span> <span class="n">exchange</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">payload_type</span> <span class="o">=</span> <span class="n">payload_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">payload</span> <span class="o">=</span> <span class="n">payload</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;&lt;Record: Exchange=</span><span class="si">{}</span><span class="s2">, Type=</span><span class="si">{}</span><span class="s2">, Length=</span><span class="si">{}</span><span class="s2">, Payload=</span><span class="si">{}</span><span class="s2">&gt;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">exchange</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">payload_type</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">payload</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">payload</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;&lt;Record: Exchange=</span><span class="si">{}</span><span class="s2">, Type=</span><span class="si">{}</span><span class="s2">, Length=</span><span class="si">{}</span><span class="s2">, Payload=</span><span class="si">{}</span><span class="s2">&gt;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">exchange</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">payload_type</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">payload</span><span class="p">),</span> <span class="s2">&quot;...&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="read_record"><a class="viewcode-back" href="../../api.html#blip.encoding.read_record">[docs]</a><span class="k">def</span> <span class="nf">read_record</span><span class="p">(</span><span class="n">fd</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Read a Record from a file handle.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">header</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">BlipRecord</span><span class="o">.</span><span class="n">converter</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">magic</span><span class="p">,</span> <span class="n">exchange</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">payload_type</span> <span class="o">=</span> <span class="n">BlipRecord</span><span class="o">.</span><span class="n">converter</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="n">header</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">struct_error</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">IncorrectLengthException</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">magic</span> <span class="o">!=</span> <span class="n">MAGIC</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">IncorrectMagicException</span><span class="p">()</span>
+
+    <span class="n">payload</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">length</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">length</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">PayloadTooShortException</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">BlipRecord</span><span class="p">(</span><span class="n">exchange</span><span class="p">,</span> <span class="n">payload_type</span><span class="p">,</span> <span class="n">payload</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="write_record"><a class="viewcode-back" href="../../api.html#blip.encoding.write_record">[docs]</a><span class="k">def</span> <span class="nf">write_record</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">fd</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Write a Record to a file handle.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">output_b</span> <span class="o">=</span> <span class="n">BlipRecord</span><span class="o">.</span><span class="n">converter</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">MAGIC</span><span class="p">,</span> <span class="n">record</span><span class="o">.</span><span class="n">exchange</span><span class="p">,</span>
+                                       <span class="nb">len</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">payload</span><span class="p">),</span> <span class="n">record</span><span class="o">.</span><span class="n">payload_type</span><span class="p">)</span>
+    <span class="n">final_out</span> <span class="o">=</span> <span class="n">output_b</span> <span class="o">+</span> <span class="n">record</span><span class="o">.</span><span class="n">payload</span>
+    <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">final_out</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="read_record_file"><a class="viewcode-back" href="../../api.html#blip.encoding.read_record_file">[docs]</a><span class="nd">@contextmanager</span>
+<span class="k">def</span> <span class="nf">read_record_file</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return a generator for all records in `filename` as the context value.</span>
+
+<span class="sd">Properly disposes of the file context as required.&quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">records_from_fd</span><span class="p">(</span><span class="n">f</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="records_from_fd"><a class="viewcode-back" href="../../api.html#blip.encoding.records_from_fd">[docs]</a><span class="k">def</span> <span class="nf">records_from_fd</span><span class="p">(</span><span class="n">fd</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Yield all BlipRecords from the provided file handle.&quot;&quot;&quot;</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">read_record</span><span class="p">(</span><span class="n">fd</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">IncorrectMagicException</span><span class="p">,</span> <span class="n">IncorrectLengthException</span><span class="p">):</span>
+            <span class="k">return</span>
+
+        <span class="k">yield</span> <span class="n">res</span></div>
+
+<div class="viewcode-block" id="print_contents_cli"><a class="viewcode-back" href="../../api.html#blip.encoding.print_contents_cli">[docs]</a><span class="k">def</span> <span class="nf">print_contents_cli</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Reads the content of a provided input and writes a string</span>
+<span class="sd">representation of all BlipRecord objects found to output</span>
+
+<span class="sd">Input -- is stdin by default unless changed by arguments</span>
+<span class="sd">Ouptut -- is stdout by default unless changed by arguments</span>
+
+<span class="sd">---</span>
+<span class="sd">Program entry_point for blip_showdb&quot;&quot;&quot;</span>
+    <span class="n">signal</span><span class="p">(</span><span class="n">SIGPIPE</span><span class="p">,</span> <span class="n">SIG_DFL</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">parsed</span> <span class="o">=</span> <span class="n">parse_args_cli</span><span class="p">()</span>
+        <span class="k">with</span> <span class="n">parsed</span><span class="o">.</span><span class="n">input</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">records_from_fd</span><span class="p">(</span><span class="n">fd</span><span class="p">):</span>
+                <span class="n">out_bytes</span> <span class="o">=</span> <span class="n">format_output_bytes</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">parsed</span><span class="o">.</span><span class="n">truncate</span><span class="p">)</span>
+                <span class="n">parsed</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">out_bytes</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="n">print_exc</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="n">stderr</span><span class="p">)</span>
+        <span class="n">sys_exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">sys_exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="format_output_bytes"><a class="viewcode-back" href="../../api.html#blip.encoding.format_output_bytes">[docs]</a><span class="k">def</span> <span class="nf">format_output_bytes</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">truncate</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return a byte-string representation of a BlipRecord.</span>
+<span class="sd">    If `truncate` is True, the payload is replaced with the</span>
+<span class="sd">    string &quot;...&quot;</span>
+
+<span class="sd">    Keyword Arguments:</span>
+<span class="sd">    record -- BlipRecord object</span>
+<span class="sd">    truncate -- Boolean argument which causes truncation on True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">fmt_string</span> <span class="o">=</span> <span class="s2">&quot;&lt;Record: Exchange=</span><span class="si">{}</span><span class="s2">, Type=</span><span class="si">{}</span><span class="s2">, Length=</span><span class="si">{}</span><span class="s2">, Payload=</span><span class="si">{}</span><span class="s2">&gt;</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">payload</span> <span class="o">=</span> <span class="s2">&quot;...&quot;</span> <span class="k">if</span> <span class="n">truncate</span> <span class="k">else</span> <span class="n">record</span><span class="o">.</span><span class="n">payload</span>
+    <span class="k">return</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">fmt_string</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">record</span><span class="o">.</span><span class="n">exchange</span><span class="p">,</span> <span class="n">record</span><span class="o">.</span><span class="n">payload_type</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">payload</span><span class="p">),</span> <span class="n">payload</span><span class="p">),</span> <span class="s1">&#39;utf-8&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="parse_args_cli"><a class="viewcode-back" href="../../api.html#blip.encoding.parse_args_cli">[docs]</a><span class="k">def</span> <span class="nf">parse_args_cli</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parse arguments parsed to the function and return parsed argparse object.</span>
+
+<span class="sd">Keyword Arguments:</span>
+<span class="sd">    args -- An array of string arguments, much like sys.argv passes&quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">sys</span> <span class="k">import</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span><span class="p">,</span> <span class="n">stdin</span>
+    <span class="kn">import</span> <span class="nn">argparse</span>
+
+    <span class="c1"># Imports are run once and cached. This function should only run</span>
+    <span class="c1"># in CLI, importing them globably is wasteful.</span>
+
+    <span class="n">argparser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">prog</span><span class="o">=</span><span class="s2">&quot;blip_showdb&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Pretty print the contents of a blip binary file to stdout.&quot;</span><span class="p">)</span>
+
+    <span class="n">argparser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;input&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">FileType</span><span class="p">(</span><span class="s1">&#39;rb&#39;</span><span class="p">),</span> <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;SOURCE&quot;</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;?&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Source from which to obtain binary contents.&quot;</span><span class="p">,</span>
+                           <span class="n">default</span><span class="o">=</span><span class="n">stdin</span><span class="o">.</span><span class="n">buffer</span><span class="p">)</span>
+    <span class="n">argparser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--output&#39;</span><span class="p">,</span> <span class="s1">&#39;-o&#39;</span><span class="p">,</span>
+                           <span class="nb">type</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">FileType</span><span class="p">(</span><span class="s1">&#39;wb&#39;</span><span class="p">),</span>
+                           <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;FILE&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Write binary output to FILE instead of stdout&quot;</span><span class="p">,</span>
+                           <span class="n">default</span><span class="o">=</span><span class="n">stdout</span><span class="o">.</span><span class="n">buffer</span><span class="p">)</span>
+    <span class="n">argparser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--truncate&quot;</span><span class="p">,</span> <span class="s2">&quot;-t&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Indicate payload output should be truncated.&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">)</span>
+
+    <span class="n">parsed</span> <span class="o">=</span> <span class="n">argparser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="k">if</span> <span class="n">args</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">argparser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span> <span class="c1"># Allow REPL debugging with arg lists</span>
+    <span class="k">if</span> <span class="n">parsed</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">stdout</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+        <span class="n">parsed</span><span class="o">.</span><span class="n">output</span> <span class="o">=</span> <span class="n">stdout</span><span class="o">.</span><span class="n">buffer</span> <span class="c1"># Prevent stdout with &#39;w&#39; rather than &#39;wb&#39; permission issues</span>
+    <span class="k">if</span> <span class="n">parsed</span><span class="o">.</span><span class="n">input</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">stdin</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+        <span class="n">parsed</span><span class="o">.</span><span class="n">input</span> <span class="o">=</span> <span class="n">stdin</span><span class="o">.</span><span class="n">buffer</span>
+    <span class="k">return</span> <span class="n">parsed</span></div>
+</pre></div>
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        <a class="uplink" href="../../index.html">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, weatherman2095.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.4.
+    </div>
+  </body>
+</html>
