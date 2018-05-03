@@ -1,13 +1,14 @@
 """
-Format
-------
-    File   ::= Record*
-    Record ::= <Magic: 4> <Exchange Id: 1> <Length: 4> <Type: 1> <Payload: N>
+..
+    Format
+    ------
+        File   ::= Record*
+        Record ::= <Magic: 4> <Exchange Id: 1> <Length: 4> <Type: 1> <Payload: N>
 
-Invariants
-----------
-    Magic  = "BLIP"
-    Length = N
+    Invariants
+    ----------
+        Magic  = "BLIP"
+        Length = N
 """
 
 from struct import Struct, error as struct_error
@@ -18,7 +19,6 @@ from blip.constants import MAGIC
 
 # Proper Signal Handling
 from signal import signal, SIGPIPE, SIG_DFL
-signal(SIGPIPE, SIG_DFL)
 
 class IncorrectMagicException(Exception): pass
 class IncorrectLengthException(Exception): pass
@@ -101,6 +101,7 @@ Ouptut -- is stdout by default unless changed by arguments
 
 ---
 Program entry_point for blip_showdb"""
+    signal(SIGPIPE, SIG_DFL)
     try:
         parsed = parse_args_cli()
         with parsed.input as fd:

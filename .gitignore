@@ -103,3 +103,5 @@ ENV/
 bin/
 include/
 share/
+doc-sphinx/_build
+doc-sphinx/_build/*
