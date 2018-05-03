@@ -1,13 +1,14 @@
 """
-Format
-------
-    File   ::= Record*
-    Record ::= <Magic: 4> <Exchange Id: 1> <Length: 4> <Type: 1> <Payload: N>
+..
+    Format
+    ------
+        File   ::= Record*
+        Record ::= <Magic: 4> <Exchange Id: 1> <Length: 4> <Type: 1> <Payload: N>
 
-Invariants
-----------
-    Magic  = "BLIP"
-    Length = N
+    Invariants
+    ----------
+        Magic  = "BLIP"
+        Length = N
 """
 
 from struct import Struct, error as struct_error

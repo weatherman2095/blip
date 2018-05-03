@@ -39,6 +39,8 @@ setup(
     cmdclass={},
     test_suite='test',
     tests_require=[],
-    extras_require={},
+    extras_require={
+        'docs': ['sphinx']
+    },
     include_package_data=True,
 )
