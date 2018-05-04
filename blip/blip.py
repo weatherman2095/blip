@@ -42,8 +42,11 @@ __configparser__ = configparser.ConfigParser()
 def parse_args(args=None):
     """Parse arguments parsed to the function and return parsed argparse object.
 
-Keyword Arguments:
-    args -- An array of string arguments, much like sys.argv passes"""
+:param args: A list of arguments, like sys.argv passes
+:type args: [strings] or None
+:return: Parsed argument object
+:rtype: argparse
+    """
     argparser = argparse.ArgumentParser(prog="blip", description="Packet sniffing and pcap-reading utility to extract bid-request info and output either to stdout or to a file.")
 
     device_group = argparser.add_mutually_exclusive_group(required=True)
@@ -71,18 +74,14 @@ Keyword Arguments:
 def capture_callback(destination, header, content):
     """Function which will be called on each packet capture which matches the filters.
 
-    It is meant to call other processing functions to transform
-    packets into the right binary datastructures before writing them
-    to output.
+It is meant to call other processing functions to transform packets
+into the right binary datastructures before writing them to output.
 
-    Keyword Arguments:
-
-    destination -- File-like object to which the output is written
-    header -- pcap capture header
-    content -- pcap capture data
-
+:param destination: File-like object to which the output is written
+:param header: pcap capture header
+:param content: pcap capture data
+:rtype: None
     """
-
     tcp_pkt = try_extract_tcp(content)
     if tcp_pkt is None:
         return
@@ -115,12 +114,14 @@ def write_output(path, payload_type, payload, fd):
     """Take the request path, payload_type, raw payload and write them to
 output file-descriptor
 
-Keyword Arguments:
-    path -- Decoded payload, can be any format defined in /docs
-    payload_type -- Integer which determines the payload format, as define in /docs
-    payload -- Raw binary payload, can be any format defined in /docs
-    fd -- File Descriptor to write output to
-
+:param path: Decoded payload, can be any format defined in /docs
+:type path: string
+:param payload_type: Integer which determines the payload format, as define in /docs
+:type payload_type: int
+:param payload: Raw binary payload, can be any format defined in /docs
+:type payload: bytes
+:param fd: File Descriptor to write output to
+:rtype: None
     """
     exchange = try_get_exchange(path)
     if exchange is None:
@@ -135,11 +136,13 @@ def try_get_exchange(exchange_path,
                      matcher=re_compile(r"/requests/[a-zA-Z0-9]+"),
                      configparse=__configparser__):
     """Attempt to find an exchange id for a provided exchange path.
-Return None on failure.
 
-Keyword Arguments:
-    exchange_path -- HTTP path possibly corresponding to a valid exchange id
-    matcher -- Compiled SRE Pattern used to sanitize paths.
+:param exchange_path: HTTP path possibly corresponding to a valid exchange id
+:type exchange_path: string
+:param matcher: Compiled pattern used to sanitize paths.
+:type matcher: SRE_Pattern
+:returns: Exchange Id on success, None on failure
+:rtype: int or None
     """
     try:
         sanitized_exchange = matcher.search(exchange_path).group(0)
@@ -151,11 +154,11 @@ Keyword Arguments:
 
 def try_parse_json(http_body):
     """Attempt to parse as JSON and return the type id.
-Return None on failure.
 
-Keyword Arguments:
-    http_body -- The raw body of an http request or response
-
+:param http_body: The raw body of an http request or response
+:type http_body: bytes
+:returns: Type Id or None (failure)
+:rtype: int or None
     """
     try:
         raw_json_text = http_body.decode()
@@ -167,11 +170,11 @@ Keyword Arguments:
 
 def try_parse_protobuf(http_body):
     """Attempt to parse as protobuf as return the type id.
-Return None on failure.
 
-Keyword Arguments:
-    http_body -- The raw body of an http request or response
-
+:param http_body: The raw body of an http request or response
+:type http_body: bytes
+:returns: Type Id or None (failure)
+:rtype: int or None
     """
     try:
         protobuf = BidRequest.FromString(http_body)
@@ -183,8 +186,12 @@ Keyword Arguments:
 
 def try_extract_tcp(eth_payload):
     """Attempt to extract a TCP dictionary from raw bytes.
-Return None on failure."""
 
+:param eth_payload: Binary ethernet payload
+:type eth_payload: bytes
+:returns: A partially decoded TCP object or None (failure)
+:rtype: dpkt.tcp.TCP or None
+    """
     try:
         eth = dpkt.ethernet.Ethernet(eth_payload)
         ip = eth.ip
@@ -196,8 +203,13 @@ Return None on failure."""
     return tcp
 
 def try_extract_http(data):
-    """Attempt to extract an HTTP request from raw bytes.
-Return None on failure."""
+    """Attempt to extract an HTTP request from a raw bytes.
+
+:param data: TCP payload to decode
+:type data: bytes
+:returns: A decoded HTTP request or None (failure)
+:rtype: dpkt.http.Request or None
+    """
 
     try:
         req = dpkt.http.Request(data)
@@ -208,7 +220,11 @@ Return None on failure."""
     return req
 
 def capture_traffic(pargs):
-    """Initiate capture of data from a device or pcap file"""
+    """Initiate capture of data from a device or pcap file
+
+:param pargs: Parsed argument object
+:rtype: None
+    """
     is_dev = pargs.device is not None
     with pargs.output as out: # Ensure proper resource disposal
         callback = partial(capture_callback, out) # This may or may not lead to more context-switching than closures depending on internal implementation.
@@ -221,9 +237,12 @@ def capture_traffic(pargs):
 def setup_log(level, logfile):
     """Setup a logger to provide debugging information
 
-Keyword Arguments:
-    level -- Debug level to use, from ['debug', 'info', 'warning', 'error', 'critical']
-    logfile -- Name of the logfile."""
+:param level: Debug level to use, from ['debug', 'info', 'warning', 'error', 'critical']
+:type level: string
+:param logfile: Name of the logfile
+:type logfile: string
+:rtype: None
+"""
     vlevel = getattr(logging, level.upper())
     __logger__.setLevel(vlevel)
 
@@ -243,23 +262,31 @@ Keyword Arguments:
     __logger__.addHandler(handler)
 
 def create_logfile():
-    """Create a new temporary file for logs and return its filename"""
+    """Create a new temporary file for logs and return its filename
+
+:returns: A random logfile name
+:rtype: string
+    """
     with NamedTemporaryFile(prefix="{}_".format(__name__),suffix=".log", delete=False) as f:
         return f.name
 
 def manage_config(files):
     """Update the __configparser__ using the passed files.
 
-Keyword Arguments:
-    files -- List of strings representing paths or filenames"""
-
+:param files: List of strings representing paths or filenames
+:type files: [strings]
+:rtype: None
+    """
     if not files or not all(os_isfile(x) for x in files):
         raise configparser.Error("One or more of the files passed as argument for config do not exist.\n")
 
     __configparser__.read(files)
 
 def main(args=None):
-    """blip main entry point, provides all functionality"""
+    """blip main entry point, provides all functionality
+
+:rtype: None
+    """
     signal(SIGPIPE, SIG_DFL)
     exit_code = 1
     try:

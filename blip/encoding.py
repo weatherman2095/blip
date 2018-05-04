@@ -25,7 +25,15 @@ class IncorrectLengthException(Exception): pass
 class PayloadTooShortException(Exception): pass
 
 class BlipRecord():
-    """Container class for blip record metadata."""
+    """Container class for blip record metadata.
+
+:param exchange: Exchange Id
+:type exchange: int
+:param payload_type: Exchange Type
+:type payload_type: int
+:param payload: Record Payload
+:type payload: bytes
+    """
     converter = Struct(
         "!"  # network order
         "4s" # 4-char string: magic number
@@ -48,8 +56,10 @@ class BlipRecord():
             self.exchange, self.payload_type, len(self.payload), "...")
 
 def read_record(fd):
-    """
-    Read a Record from a file handle.
+    """Read a Record from a file handle.
+
+:returns: A Record from the file
+:rtype: BlipRecord
     """
     header = fd.read(BlipRecord.converter.size)
     try:
@@ -66,8 +76,12 @@ def read_record(fd):
     return BlipRecord(exchange, payload_type, payload)
 
 def write_record(record, fd):
-    """
-    Write a Record to a file handle.
+    """Write a Record to a file handle.
+
+:param record: Record to Write
+:type record: BlipRecord
+:param fd: File descriptor for the destination file
+:rtype: None
     """
     output_b = BlipRecord.converter.pack(MAGIC, record.exchange,
                                        len(record.payload), record.payload_type)
@@ -78,12 +92,20 @@ def write_record(record, fd):
 def read_record_file(filename):
     """Return a generator for all records in `filename` as the context value.
 
-Properly disposes of the file context as required."""
+Properly disposes of the file context as required.
+
+:param filename: Name of the source file
+:type filename: string
+    """
     with open(filename, "rb") as f:
         yield records_from_fd(f)
 
 def records_from_fd(fd):
-    """Yield all BlipRecords from the provided file handle."""
+    """Yield all BlipRecords from the provided file handle.
+
+:param fd: File descriptor for the source file
+:rtype: BlipRecord
+    """
     while True:
         try:
             res = read_record(fd)
@@ -96,11 +118,13 @@ def print_contents_cli():
     """Reads the content of a provided input and writes a string
 representation of all BlipRecord objects found to output
 
-Input -- is stdin by default unless changed by arguments
-Ouptut -- is stdout by default unless changed by arguments
+:Input: stdin by default unless changed by command-line arguments
+:Output: stdout by default unless changed by command-line arguments
 
----
-Program entry_point for blip_showdb"""
+Program entry point for `blip_showdb`
+
+:rtype: None
+    """
     signal(SIGPIPE, SIG_DFL)
     try:
         parsed = parse_args_cli()
@@ -117,12 +141,14 @@ Program entry_point for blip_showdb"""
 
 def format_output_bytes(record, truncate):
     """Return a byte-string representation of a BlipRecord.
-    If `truncate` is True, the payload is replaced with the
-    string "..."
 
-    Keyword Arguments:
-    record -- BlipRecord object
-    truncate -- Boolean argument which causes truncation on True
+If `truncate` is True, the payload is replaced with the string "..."
+
+:param record: BlipRecord object
+:type record: BlipRecord
+:param truncate: Boolean argument which causes truncation on True
+:type truncate: bool
+:rtype: bytes
     """
     fmt_string = "<Record: Exchange={}, Type={}, Length={}, Payload={}>\n"
     payload = "..." if truncate else record.payload
@@ -132,8 +158,11 @@ def format_output_bytes(record, truncate):
 def parse_args_cli(args=None):
     """Parse arguments parsed to the function and return parsed argparse object.
 
-Keyword Arguments:
-    args -- An array of string arguments, much like sys.argv passes"""
+:param args: An array of string arguments, much like sys.argv passes
+:type args: [strings]
+:returns: Parsed argument object
+:rtype: argparse
+    """
     from sys import stdout, stderr, stdin
     import argparse
 
