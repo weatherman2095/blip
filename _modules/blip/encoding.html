@@ -58,7 +58,15 @@
 <div class="viewcode-block" id="PayloadTooShortException"><a class="viewcode-back" href="../../api.html#blip.encoding.PayloadTooShortException">[docs]</a><span class="k">class</span> <span class="nc">PayloadTooShortException</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span> <span class="k">pass</span></div>
 
 <div class="viewcode-block" id="BlipRecord"><a class="viewcode-back" href="../../api.html#blip.encoding.BlipRecord">[docs]</a><span class="k">class</span> <span class="nc">BlipRecord</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;Container class for blip record metadata.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Container class for blip record metadata.</span>
+
+<span class="sd">:param exchange: Exchange Id</span>
+<span class="sd">:type exchange: int</span>
+<span class="sd">:param payload_type: Exchange Type</span>
+<span class="sd">:type payload_type: int</span>
+<span class="sd">:param payload: Record Payload</span>
+<span class="sd">:type payload: bytes</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">converter</span> <span class="o">=</span> <span class="n">Struct</span><span class="p">(</span>
         <span class="s2">&quot;!&quot;</span>  <span class="c1"># network order</span>
         <span class="s2">&quot;4s&quot;</span> <span class="c1"># 4-char string: magic number</span>
@@ -81,8 +89,10 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">exchange</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">payload_type</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">payload</span><span class="p">),</span> <span class="s2">&quot;...&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="read_record"><a class="viewcode-back" href="../../api.html#blip.encoding.read_record">[docs]</a><span class="k">def</span> <span class="nf">read_record</span><span class="p">(</span><span class="n">fd</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Read a Record from a file handle.</span>
+    <span class="sd">&quot;&quot;&quot;Read a Record from a file handle.</span>
+
+<span class="sd">:returns: A Record from the file</span>
+<span class="sd">:rtype: BlipRecord</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">header</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">BlipRecord</span><span class="o">.</span><span class="n">converter</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
@@ -99,8 +109,12 @@
     <span class="k">return</span> <span class="n">BlipRecord</span><span class="p">(</span><span class="n">exchange</span><span class="p">,</span> <span class="n">payload_type</span><span class="p">,</span> <span class="n">payload</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="write_record"><a class="viewcode-back" href="../../api.html#blip.encoding.write_record">[docs]</a><span class="k">def</span> <span class="nf">write_record</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">fd</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Write a Record to a file handle.</span>
+    <span class="sd">&quot;&quot;&quot;Write a Record to a file handle.</span>
+
+<span class="sd">:param record: Record to Write</span>
+<span class="sd">:type record: BlipRecord</span>
+<span class="sd">:param fd: File descriptor for the destination file</span>
+<span class="sd">:rtype: None</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">output_b</span> <span class="o">=</span> <span class="n">BlipRecord</span><span class="o">.</span><span class="n">converter</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">MAGIC</span><span class="p">,</span> <span class="n">record</span><span class="o">.</span><span class="n">exchange</span><span class="p">,</span>
                                        <span class="nb">len</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">payload</span><span class="p">),</span> <span class="n">record</span><span class="o">.</span><span class="n">payload_type</span><span class="p">)</span>
@@ -111,12 +125,20 @@
 <span class="k">def</span> <span class="nf">read_record_file</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Return a generator for all records in `filename` as the context value.</span>
 
-<span class="sd">Properly disposes of the file context as required.&quot;&quot;&quot;</span>
+<span class="sd">Properly disposes of the file context as required.</span>
+
+<span class="sd">:param filename: Name of the source file</span>
+<span class="sd">:type filename: string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="k">yield</span> <span class="n">records_from_fd</span><span class="p">(</span><span class="n">f</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="records_from_fd"><a class="viewcode-back" href="../../api.html#blip.encoding.records_from_fd">[docs]</a><span class="k">def</span> <span class="nf">records_from_fd</span><span class="p">(</span><span class="n">fd</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Yield all BlipRecords from the provided file handle.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Yield all BlipRecords from the provided file handle.</span>
+
+<span class="sd">:param fd: File descriptor for the source file</span>
+<span class="sd">:rtype: BlipRecord</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">res</span> <span class="o">=</span> <span class="n">read_record</span><span class="p">(</span><span class="n">fd</span><span class="p">)</span>
@@ -129,11 +151,13 @@
     <span class="sd">&quot;&quot;&quot;Reads the content of a provided input and writes a string</span>
 <span class="sd">representation of all BlipRecord objects found to output</span>
 
-<span class="sd">Input -- is stdin by default unless changed by arguments</span>
-<span class="sd">Ouptut -- is stdout by default unless changed by arguments</span>
+<span class="sd">:Input: stdin by default unless changed by command-line arguments</span>
+<span class="sd">:Output: stdout by default unless changed by command-line arguments</span>
 
-<span class="sd">---</span>
-<span class="sd">Program entry_point for blip_showdb&quot;&quot;&quot;</span>
+<span class="sd">Program entry point for `blip_showdb`</span>
+
+<span class="sd">:rtype: None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">signal</span><span class="p">(</span><span class="n">SIGPIPE</span><span class="p">,</span> <span class="n">SIG_DFL</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">parsed</span> <span class="o">=</span> <span class="n">parse_args_cli</span><span class="p">()</span>
@@ -150,12 +174,14 @@
 
 <div class="viewcode-block" id="format_output_bytes"><a class="viewcode-back" href="../../api.html#blip.encoding.format_output_bytes">[docs]</a><span class="k">def</span> <span class="nf">format_output_bytes</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">truncate</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Return a byte-string representation of a BlipRecord.</span>
-<span class="sd">    If `truncate` is True, the payload is replaced with the</span>
-<span class="sd">    string &quot;...&quot;</span>
 
-<span class="sd">    Keyword Arguments:</span>
-<span class="sd">    record -- BlipRecord object</span>
-<span class="sd">    truncate -- Boolean argument which causes truncation on True</span>
+<span class="sd">If `truncate` is True, the payload is replaced with the string &quot;...&quot;</span>
+
+<span class="sd">:param record: BlipRecord object</span>
+<span class="sd">:type record: BlipRecord</span>
+<span class="sd">:param truncate: Boolean argument which causes truncation on True</span>
+<span class="sd">:type truncate: bool</span>
+<span class="sd">:rtype: bytes</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">fmt_string</span> <span class="o">=</span> <span class="s2">&quot;&lt;Record: Exchange=</span><span class="si">{}</span><span class="s2">, Type=</span><span class="si">{}</span><span class="s2">, Length=</span><span class="si">{}</span><span class="s2">, Payload=</span><span class="si">{}</span><span class="s2">&gt;</span><span class="se">\n</span><span class="s2">&quot;</span>
     <span class="n">payload</span> <span class="o">=</span> <span class="s2">&quot;...&quot;</span> <span class="k">if</span> <span class="n">truncate</span> <span class="k">else</span> <span class="n">record</span><span class="o">.</span><span class="n">payload</span>
@@ -165,8 +191,11 @@
 <div class="viewcode-block" id="parse_args_cli"><a class="viewcode-back" href="../../api.html#blip.encoding.parse_args_cli">[docs]</a><span class="k">def</span> <span class="nf">parse_args_cli</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Parse arguments parsed to the function and return parsed argparse object.</span>
 
-<span class="sd">Keyword Arguments:</span>
-<span class="sd">    args -- An array of string arguments, much like sys.argv passes&quot;&quot;&quot;</span>
+<span class="sd">:param args: An array of string arguments, much like sys.argv passes</span>
+<span class="sd">:type args: [strings]</span>
+<span class="sd">:returns: Parsed argument object</span>
+<span class="sd">:rtype: argparse</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">from</span> <span class="nn">sys</span> <span class="k">import</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span><span class="p">,</span> <span class="n">stdin</span>
     <span class="kn">import</span> <span class="nn">argparse</span>
 

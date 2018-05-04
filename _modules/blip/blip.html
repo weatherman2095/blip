@@ -75,8 +75,11 @@
 <div class="viewcode-block" id="parse_args"><a class="viewcode-back" href="../../api.html#blip.blip.parse_args">[docs]</a><span class="k">def</span> <span class="nf">parse_args</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Parse arguments parsed to the function and return parsed argparse object.</span>
 
-<span class="sd">Keyword Arguments:</span>
-<span class="sd">    args -- An array of string arguments, much like sys.argv passes&quot;&quot;&quot;</span>
+<span class="sd">:param args: A list of arguments, like sys.argv passes</span>
+<span class="sd">:type args: [strings] or None</span>
+<span class="sd">:return: Parsed argument object</span>
+<span class="sd">:rtype: argparse</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">argparser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">prog</span><span class="o">=</span><span class="s2">&quot;blip&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Packet sniffing and pcap-reading utility to extract bid-request info and output either to stdout or to a file.&quot;</span><span class="p">)</span>
 
     <span class="n">device_group</span> <span class="o">=</span> <span class="n">argparser</span><span class="o">.</span><span class="n">add_mutually_exclusive_group</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -104,18 +107,14 @@
 <div class="viewcode-block" id="capture_callback"><a class="viewcode-back" href="../../api.html#blip.blip.capture_callback">[docs]</a><span class="k">def</span> <span class="nf">capture_callback</span><span class="p">(</span><span class="n">destination</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Function which will be called on each packet capture which matches the filters.</span>
 
-<span class="sd">    It is meant to call other processing functions to transform</span>
-<span class="sd">    packets into the right binary datastructures before writing them</span>
-<span class="sd">    to output.</span>
+<span class="sd">It is meant to call other processing functions to transform packets</span>
+<span class="sd">into the right binary datastructures before writing them to output.</span>
 
-<span class="sd">    Keyword Arguments:</span>
-
-<span class="sd">    destination -- File-like object to which the output is written</span>
-<span class="sd">    header -- pcap capture header</span>
-<span class="sd">    content -- pcap capture data</span>
-
+<span class="sd">:param destination: File-like object to which the output is written</span>
+<span class="sd">:param header: pcap capture header</span>
+<span class="sd">:param content: pcap capture data</span>
+<span class="sd">:rtype: None</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="n">tcp_pkt</span> <span class="o">=</span> <span class="n">try_extract_tcp</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">tcp_pkt</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span>
@@ -148,12 +147,14 @@
     <span class="sd">&quot;&quot;&quot;Take the request path, payload_type, raw payload and write them to</span>
 <span class="sd">output file-descriptor</span>
 
-<span class="sd">Keyword Arguments:</span>
-<span class="sd">    path -- Decoded payload, can be any format defined in /docs</span>
-<span class="sd">    payload_type -- Integer which determines the payload format, as define in /docs</span>
-<span class="sd">    payload -- Raw binary payload, can be any format defined in /docs</span>
-<span class="sd">    fd -- File Descriptor to write output to</span>
-
+<span class="sd">:param path: Decoded payload, can be any format defined in /docs</span>
+<span class="sd">:type path: string</span>
+<span class="sd">:param payload_type: Integer which determines the payload format, as define in /docs</span>
+<span class="sd">:type payload_type: int</span>
+<span class="sd">:param payload: Raw binary payload, can be any format defined in /docs</span>
+<span class="sd">:type payload: bytes</span>
+<span class="sd">:param fd: File Descriptor to write output to</span>
+<span class="sd">:rtype: None</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">exchange</span> <span class="o">=</span> <span class="n">try_get_exchange</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">exchange</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -168,11 +169,13 @@
                      <span class="n">matcher</span><span class="o">=</span><span class="n">re_compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;/requests/[a-zA-Z0-9]+&quot;</span><span class="p">),</span>
                      <span class="n">configparse</span><span class="o">=</span><span class="n">__configparser__</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Attempt to find an exchange id for a provided exchange path.</span>
-<span class="sd">Return None on failure.</span>
 
-<span class="sd">Keyword Arguments:</span>
-<span class="sd">    exchange_path -- HTTP path possibly corresponding to a valid exchange id</span>
-<span class="sd">    matcher -- Compiled SRE Pattern used to sanitize paths.</span>
+<span class="sd">:param exchange_path: HTTP path possibly corresponding to a valid exchange id</span>
+<span class="sd">:type exchange_path: string</span>
+<span class="sd">:param matcher: Compiled pattern used to sanitize paths.</span>
+<span class="sd">:type matcher: SRE_Pattern</span>
+<span class="sd">:returns: Exchange Id on success, None on failure</span>
+<span class="sd">:rtype: int or None</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">sanitized_exchange</span> <span class="o">=</span> <span class="n">matcher</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">exchange_path</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
@@ -184,11 +187,11 @@
 
 <div class="viewcode-block" id="try_parse_json"><a class="viewcode-back" href="../../api.html#blip.blip.try_parse_json">[docs]</a><span class="k">def</span> <span class="nf">try_parse_json</span><span class="p">(</span><span class="n">http_body</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Attempt to parse as JSON and return the type id.</span>
-<span class="sd">Return None on failure.</span>
 
-<span class="sd">Keyword Arguments:</span>
-<span class="sd">    http_body -- The raw body of an http request or response</span>
-
+<span class="sd">:param http_body: The raw body of an http request or response</span>
+<span class="sd">:type http_body: bytes</span>
+<span class="sd">:returns: Type Id or None (failure)</span>
+<span class="sd">:rtype: int or None</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">raw_json_text</span> <span class="o">=</span> <span class="n">http_body</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
@@ -200,11 +203,11 @@
 
 <div class="viewcode-block" id="try_parse_protobuf"><a class="viewcode-back" href="../../api.html#blip.blip.try_parse_protobuf">[docs]</a><span class="k">def</span> <span class="nf">try_parse_protobuf</span><span class="p">(</span><span class="n">http_body</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Attempt to parse as protobuf as return the type id.</span>
-<span class="sd">Return None on failure.</span>
 
-<span class="sd">Keyword Arguments:</span>
-<span class="sd">    http_body -- The raw body of an http request or response</span>
-
+<span class="sd">:param http_body: The raw body of an http request or response</span>
+<span class="sd">:type http_body: bytes</span>
+<span class="sd">:returns: Type Id or None (failure)</span>
+<span class="sd">:rtype: int or None</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">protobuf</span> <span class="o">=</span> <span class="n">BidRequest</span><span class="o">.</span><span class="n">FromString</span><span class="p">(</span><span class="n">http_body</span><span class="p">)</span>
@@ -216,8 +219,12 @@
 
 <div class="viewcode-block" id="try_extract_tcp"><a class="viewcode-back" href="../../api.html#blip.blip.try_extract_tcp">[docs]</a><span class="k">def</span> <span class="nf">try_extract_tcp</span><span class="p">(</span><span class="n">eth_payload</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Attempt to extract a TCP dictionary from raw bytes.</span>
-<span class="sd">Return None on failure.&quot;&quot;&quot;</span>
 
+<span class="sd">:param eth_payload: Binary ethernet payload</span>
+<span class="sd">:type eth_payload: bytes</span>
+<span class="sd">:returns: A partially decoded TCP object or None (failure)</span>
+<span class="sd">:rtype: dpkt.tcp.TCP or None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">eth</span> <span class="o">=</span> <span class="n">dpkt</span><span class="o">.</span><span class="n">ethernet</span><span class="o">.</span><span class="n">Ethernet</span><span class="p">(</span><span class="n">eth_payload</span><span class="p">)</span>
         <span class="n">ip</span> <span class="o">=</span> <span class="n">eth</span><span class="o">.</span><span class="n">ip</span>
@@ -229,8 +236,13 @@
     <span class="k">return</span> <span class="n">tcp</span></div>
 
 <div class="viewcode-block" id="try_extract_http"><a class="viewcode-back" href="../../api.html#blip.blip.try_extract_http">[docs]</a><span class="k">def</span> <span class="nf">try_extract_http</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Attempt to extract an HTTP request from raw bytes.</span>
-<span class="sd">Return None on failure.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Attempt to extract an HTTP request from a raw bytes.</span>
+
+<span class="sd">:param data: TCP payload to decode</span>
+<span class="sd">:type data: bytes</span>
+<span class="sd">:returns: A decoded HTTP request or None (failure)</span>
+<span class="sd">:rtype: dpkt.http.Request or None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">try</span><span class="p">:</span>
         <span class="n">req</span> <span class="o">=</span> <span class="n">dpkt</span><span class="o">.</span><span class="n">http</span><span class="o">.</span><span class="n">Request</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
@@ -241,7 +253,11 @@
     <span class="k">return</span> <span class="n">req</span></div>
 
 <div class="viewcode-block" id="capture_traffic"><a class="viewcode-back" href="../../api.html#blip.blip.capture_traffic">[docs]</a><span class="k">def</span> <span class="nf">capture_traffic</span><span class="p">(</span><span class="n">pargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Initiate capture of data from a device or pcap file&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Initiate capture of data from a device or pcap file</span>
+
+<span class="sd">:param pargs: Parsed argument object</span>
+<span class="sd">:rtype: None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">is_dev</span> <span class="o">=</span> <span class="n">pargs</span><span class="o">.</span><span class="n">device</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
     <span class="k">with</span> <span class="n">pargs</span><span class="o">.</span><span class="n">output</span> <span class="k">as</span> <span class="n">out</span><span class="p">:</span> <span class="c1"># Ensure proper resource disposal</span>
         <span class="n">callback</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">capture_callback</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span> <span class="c1"># This may or may not lead to more context-switching than closures depending on internal implementation.</span>
@@ -254,9 +270,12 @@
 <div class="viewcode-block" id="setup_log"><a class="viewcode-back" href="../../api.html#blip.blip.setup_log">[docs]</a><span class="k">def</span> <span class="nf">setup_log</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="n">logfile</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Setup a logger to provide debugging information</span>
 
-<span class="sd">Keyword Arguments:</span>
-<span class="sd">    level -- Debug level to use, from [&#39;debug&#39;, &#39;info&#39;, &#39;warning&#39;, &#39;error&#39;, &#39;critical&#39;]</span>
-<span class="sd">    logfile -- Name of the logfile.&quot;&quot;&quot;</span>
+<span class="sd">:param level: Debug level to use, from [&#39;debug&#39;, &#39;info&#39;, &#39;warning&#39;, &#39;error&#39;, &#39;critical&#39;]</span>
+<span class="sd">:type level: string</span>
+<span class="sd">:param logfile: Name of the logfile</span>
+<span class="sd">:type logfile: string</span>
+<span class="sd">:rtype: None</span>
+<span class="sd">&quot;&quot;&quot;</span>
     <span class="n">vlevel</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">logging</span><span class="p">,</span> <span class="n">level</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span>
     <span class="n">__logger__</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">vlevel</span><span class="p">)</span>
 
@@ -276,23 +295,31 @@
     <span class="n">__logger__</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="create_logfile"><a class="viewcode-back" href="../../api.html#blip.blip.create_logfile">[docs]</a><span class="k">def</span> <span class="nf">create_logfile</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;Create a new temporary file for logs and return its filename&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Create a new temporary file for logs and return its filename</span>
+
+<span class="sd">:returns: A random logfile name</span>
+<span class="sd">:rtype: string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">with</span> <span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">_&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="vm">__name__</span><span class="p">),</span><span class="n">suffix</span><span class="o">=</span><span class="s2">&quot;.log&quot;</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span></div>
 
 <div class="viewcode-block" id="manage_config"><a class="viewcode-back" href="../../api.html#blip.blip.manage_config">[docs]</a><span class="k">def</span> <span class="nf">manage_config</span><span class="p">(</span><span class="n">files</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Update the __configparser__ using the passed files.</span>
 
-<span class="sd">Keyword Arguments:</span>
-<span class="sd">    files -- List of strings representing paths or filenames&quot;&quot;&quot;</span>
-
+<span class="sd">:param files: List of strings representing paths or filenames</span>
+<span class="sd">:type files: [strings]</span>
+<span class="sd">:rtype: None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">files</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">os_isfile</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">files</span><span class="p">):</span>
         <span class="k">raise</span> <span class="n">configparser</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;One or more of the files passed as argument for config do not exist.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="n">__configparser__</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">files</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="main"><a class="viewcode-back" href="../../api.html#blip.blip.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;blip main entry point, provides all functionality&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;blip main entry point, provides all functionality</span>
+
+<span class="sd">:rtype: None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">signal</span><span class="p">(</span><span class="n">SIGPIPE</span><span class="p">,</span> <span class="n">SIG_DFL</span><span class="p">)</span>
     <span class="n">exit_code</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="k">try</span><span class="p">:</span>

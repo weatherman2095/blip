@@ -39,110 +39,221 @@
 <dt id="blip.blip.capture_callback">
 <code class="descclassname">blip.blip.</code><code class="descname">capture_callback</code><span class="sig-paren">(</span><em>destination</em>, <em>header</em>, <em>content</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blip/blip.html#capture_callback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.blip.capture_callback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function which will be called on each packet capture which matches the filters.</p>
-<p>It is meant to call other processing functions to transform
-packets into the right binary datastructures before writing them
-to output.</p>
-<p>Keyword Arguments:</p>
-<p>destination – File-like object to which the output is written
-header – pcap capture header
-content – pcap capture data</p>
+<p>It is meant to call other processing functions to transform packets
+into the right binary datastructures before writing them to output.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>destination</strong> – File-like object to which the output is written</li>
+<li><strong>header</strong> – pcap capture header</li>
+<li><strong>content</strong> – pcap capture data</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">None</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
 <dt id="blip.blip.capture_traffic">
 <code class="descclassname">blip.blip.</code><code class="descname">capture_traffic</code><span class="sig-paren">(</span><em>pargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blip/blip.html#capture_traffic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.blip.capture_traffic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initiate capture of data from a device or pcap file</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>pargs</strong> – Parsed argument object</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">None</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
 <dt id="blip.blip.create_logfile">
 <code class="descclassname">blip.blip.</code><code class="descname">create_logfile</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/blip/blip.html#create_logfile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.blip.create_logfile" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a new temporary file for logs and return its filename</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A random logfile name</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">string</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
 <dt id="blip.blip.main">
 <code class="descclassname">blip.blip.</code><code class="descname">main</code><span class="sig-paren">(</span><em>args=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blip/blip.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.blip.main" title="Permalink to this definition">¶</a></dt>
 <dd><p>blip main entry point, provides all functionality</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">None</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
 <dt id="blip.blip.manage_config">
 <code class="descclassname">blip.blip.</code><code class="descname">manage_config</code><span class="sig-paren">(</span><em>files</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blip/blip.html#manage_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.blip.manage_config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update the __configparser__ using the passed files.</p>
-<dl class="docutils">
-<dt>Keyword Arguments:</dt>
-<dd>files – List of strings representing paths or filenames</dd>
-</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>files</strong> (<em>[</em><em>strings</em><em>]</em>) – List of strings representing paths or filenames</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">None</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
 <dt id="blip.blip.parse_args">
 <code class="descclassname">blip.blip.</code><code class="descname">parse_args</code><span class="sig-paren">(</span><em>args=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blip/blip.html#parse_args"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.blip.parse_args" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse arguments parsed to the function and return parsed argparse object.</p>
-<dl class="docutils">
-<dt>Keyword Arguments:</dt>
-<dd>args – An array of string arguments, much like sys.argv passes</dd>
-</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>args</strong> (<em>[</em><em>strings</em><em>] or </em><em>None</em>) – A list of arguments, like sys.argv passes</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Parsed argument object</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">argparse</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
 <dt id="blip.blip.setup_log">
 <code class="descclassname">blip.blip.</code><code class="descname">setup_log</code><span class="sig-paren">(</span><em>level</em>, <em>logfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blip/blip.html#setup_log"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.blip.setup_log" title="Permalink to this definition">¶</a></dt>
 <dd><p>Setup a logger to provide debugging information</p>
-<dl class="docutils">
-<dt>Keyword Arguments:</dt>
-<dd>level – Debug level to use, from [‘debug’, ‘info’, ‘warning’, ‘error’, ‘critical’]
-logfile – Name of the logfile.</dd>
-</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>level</strong> (<em>string</em>) – Debug level to use, from [‘debug’, ‘info’, ‘warning’, ‘error’, ‘critical’]</li>
+<li><strong>logfile</strong> (<em>string</em>) – Name of the logfile</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">None</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
 <dt id="blip.blip.try_extract_http">
 <code class="descclassname">blip.blip.</code><code class="descname">try_extract_http</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blip/blip.html#try_extract_http"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.blip.try_extract_http" title="Permalink to this definition">¶</a></dt>
-<dd><p>Attempt to extract an HTTP request from raw bytes.
-Return None on failure.</p>
+<dd><p>Attempt to extract an HTTP request from a raw bytes.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<em>bytes</em>) – TCP payload to decode</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A decoded HTTP request or None (failure)</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">dpkt.http.Request or None</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
 <dt id="blip.blip.try_extract_tcp">
 <code class="descclassname">blip.blip.</code><code class="descname">try_extract_tcp</code><span class="sig-paren">(</span><em>eth_payload</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blip/blip.html#try_extract_tcp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.blip.try_extract_tcp" title="Permalink to this definition">¶</a></dt>
-<dd><p>Attempt to extract a TCP dictionary from raw bytes.
-Return None on failure.</p>
+<dd><p>Attempt to extract a TCP dictionary from raw bytes.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>eth_payload</strong> (<em>bytes</em>) – Binary ethernet payload</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A partially decoded TCP object or None (failure)</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">dpkt.tcp.TCP or None</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
 <dt id="blip.blip.try_get_exchange">
 <code class="descclassname">blip.blip.</code><code class="descname">try_get_exchange</code><span class="sig-paren">(</span><em>exchange_path</em>, <em>matcher=re.compile('/requests/[a-zA-Z0-9]+')</em>, <em>configparse=&lt;configparser.ConfigParser object&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blip/blip.html#try_get_exchange"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.blip.try_get_exchange" title="Permalink to this definition">¶</a></dt>
-<dd><p>Attempt to find an exchange id for a provided exchange path.
-Return None on failure.</p>
-<dl class="docutils">
-<dt>Keyword Arguments:</dt>
-<dd>exchange_path – HTTP path possibly corresponding to a valid exchange id
-matcher – Compiled SRE Pattern used to sanitize paths.</dd>
-</dl>
+<dd><p>Attempt to find an exchange id for a provided exchange path.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>exchange_path</strong> (<em>string</em>) – HTTP path possibly corresponding to a valid exchange id</li>
+<li><strong>matcher</strong> (<em>SRE_Pattern</em>) – Compiled pattern used to sanitize paths.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Exchange Id on success, None on failure</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">int or None</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
 <dt id="blip.blip.try_parse_json">
 <code class="descclassname">blip.blip.</code><code class="descname">try_parse_json</code><span class="sig-paren">(</span><em>http_body</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blip/blip.html#try_parse_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.blip.try_parse_json" title="Permalink to this definition">¶</a></dt>
-<dd><p>Attempt to parse as JSON and return the type id.
-Return None on failure.</p>
-<dl class="docutils">
-<dt>Keyword Arguments:</dt>
-<dd>http_body – The raw body of an http request or response</dd>
-</dl>
+<dd><p>Attempt to parse as JSON and return the type id.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>http_body</strong> (<em>bytes</em>) – The raw body of an http request or response</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Type Id or None (failure)</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">int or None</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
 <dt id="blip.blip.try_parse_protobuf">
 <code class="descclassname">blip.blip.</code><code class="descname">try_parse_protobuf</code><span class="sig-paren">(</span><em>http_body</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blip/blip.html#try_parse_protobuf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.blip.try_parse_protobuf" title="Permalink to this definition">¶</a></dt>
-<dd><p>Attempt to parse as protobuf as return the type id.
-Return None on failure.</p>
-<dl class="docutils">
-<dt>Keyword Arguments:</dt>
-<dd>http_body – The raw body of an http request or response</dd>
-</dl>
+<dd><p>Attempt to parse as protobuf as return the type id.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>http_body</strong> (<em>bytes</em>) – The raw body of an http request or response</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Type Id or None (failure)</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">int or None</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
@@ -150,19 +261,42 @@ Return None on failure.</p>
 <code class="descclassname">blip.blip.</code><code class="descname">write_output</code><span class="sig-paren">(</span><em>path</em>, <em>payload_type</em>, <em>payload</em>, <em>fd</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blip/blip.html#write_output"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.blip.write_output" title="Permalink to this definition">¶</a></dt>
 <dd><p>Take the request path, payload_type, raw payload and write them to
 output file-descriptor</p>
-<dl class="docutils">
-<dt>Keyword Arguments:</dt>
-<dd>path – Decoded payload, can be any format defined in /docs
-payload_type – Integer which determines the payload format, as define in /docs
-payload – Raw binary payload, can be any format defined in /docs
-fd – File Descriptor to write output to</dd>
-</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>path</strong> (<em>string</em>) – Decoded payload, can be any format defined in /docs</li>
+<li><strong>payload_type</strong> (<em>int</em>) – Integer which determines the payload format, as define in /docs</li>
+<li><strong>payload</strong> (<em>bytes</em>) – Raw binary payload, can be any format defined in /docs</li>
+<li><strong>fd</strong> – File Descriptor to write output to</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">None</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <span class="target" id="module-blip.encoding"></span><dl class="class">
 <dt id="blip.encoding.BlipRecord">
 <em class="property">class </em><code class="descclassname">blip.encoding.</code><code class="descname">BlipRecord</code><span class="sig-paren">(</span><em>exchange</em>, <em>payload_type</em>, <em>payload</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blip/encoding.html#BlipRecord"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.encoding.BlipRecord" title="Permalink to this definition">¶</a></dt>
 <dd><p>Container class for blip record metadata.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>exchange</strong> (<em>int</em>) – Exchange Id</li>
+<li><strong>payload_type</strong> (<em>int</em>) – Exchange Type</li>
+<li><strong>payload</strong> (<em>bytes</em>) – Record Payload</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="exception">
@@ -183,22 +317,41 @@ fd – File Descriptor to write output to</dd>
 <dl class="function">
 <dt id="blip.encoding.format_output_bytes">
 <code class="descclassname">blip.encoding.</code><code class="descname">format_output_bytes</code><span class="sig-paren">(</span><em>record</em>, <em>truncate</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blip/encoding.html#format_output_bytes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.encoding.format_output_bytes" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a byte-string representation of a BlipRecord.
-If <cite>truncate</cite> is True, the payload is replaced with the
-string “…”</p>
-<p>Keyword Arguments:
-record – BlipRecord object
-truncate – Boolean argument which causes truncation on True</p>
+<dd><p>Return a byte-string representation of a BlipRecord.</p>
+<p>If <cite>truncate</cite> is True, the payload is replaced with the string “…”</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>record</strong> (<a class="reference internal" href="#blip.encoding.BlipRecord" title="blip.encoding.BlipRecord"><em>BlipRecord</em></a>) – BlipRecord object</li>
+<li><strong>truncate</strong> (<em>bool</em>) – Boolean argument which causes truncation on True</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">bytes</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
 <dt id="blip.encoding.parse_args_cli">
 <code class="descclassname">blip.encoding.</code><code class="descname">parse_args_cli</code><span class="sig-paren">(</span><em>args=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blip/encoding.html#parse_args_cli"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.encoding.parse_args_cli" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse arguments parsed to the function and return parsed argparse object.</p>
-<dl class="docutils">
-<dt>Keyword Arguments:</dt>
-<dd>args – An array of string arguments, much like sys.argv passes</dd>
-</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>args</strong> (<em>[</em><em>strings</em><em>]</em>) – An array of string arguments, much like sys.argv passes</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Parsed argument object</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">argparse</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
@@ -206,16 +359,41 @@ truncate – Boolean argument which causes truncation on True</p>
 <code class="descclassname">blip.encoding.</code><code class="descname">print_contents_cli</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/blip/encoding.html#print_contents_cli"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.encoding.print_contents_cli" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads the content of a provided input and writes a string
 representation of all BlipRecord objects found to output</p>
-<p>Input – is stdin by default unless changed by arguments
-Ouptut – is stdout by default unless changed by arguments</p>
-<p>—
-Program entry_point for blip_showdb</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Input:</th><td class="field-body">stdin by default unless changed by command-line arguments</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Output:</th><td class="field-body">stdout by default unless changed by command-line arguments</td>
+</tr>
+</tbody>
+</table>
+<p>Program entry point for <cite>blip_showdb</cite></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">None</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
 <dt id="blip.encoding.read_record">
 <code class="descclassname">blip.encoding.</code><code class="descname">read_record</code><span class="sig-paren">(</span><em>fd</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blip/encoding.html#read_record"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.encoding.read_record" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read a Record from a file handle.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A Record from the file</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#blip.encoding.BlipRecord" title="blip.encoding.BlipRecord">BlipRecord</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
@@ -223,18 +401,51 @@ Program entry_point for blip_showdb</p>
 <code class="descclassname">blip.encoding.</code><code class="descname">read_record_file</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blip/encoding.html#read_record_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.encoding.read_record_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a generator for all records in <cite>filename</cite> as the context value.</p>
 <p>Properly disposes of the file context as required.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filename</strong> (<em>string</em>) – Name of the source file</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
 <dt id="blip.encoding.records_from_fd">
 <code class="descclassname">blip.encoding.</code><code class="descname">records_from_fd</code><span class="sig-paren">(</span><em>fd</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blip/encoding.html#records_from_fd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.encoding.records_from_fd" title="Permalink to this definition">¶</a></dt>
 <dd><p>Yield all BlipRecords from the provided file handle.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fd</strong> – File descriptor for the source file</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#blip.encoding.BlipRecord" title="blip.encoding.BlipRecord">BlipRecord</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
 <dt id="blip.encoding.write_record">
 <code class="descclassname">blip.encoding.</code><code class="descname">write_record</code><span class="sig-paren">(</span><em>record</em>, <em>fd</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blip/encoding.html#write_record"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#blip.encoding.write_record" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write a Record to a file handle.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>record</strong> (<a class="reference internal" href="#blip.encoding.BlipRecord" title="blip.encoding.BlipRecord"><em>BlipRecord</em></a>) – Record to Write</li>
+<li><strong>fd</strong> – File descriptor for the destination file</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">None</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>
