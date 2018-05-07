@@ -1,5 +1,14 @@
 image: python:3.6
 
+test:
+  before_script:
+    - apt-get update && apt-get install -y gcc g++ make python-dev libpcap-dev
+    - python3 setup.py develop
+    - pip3 install -e .[docs]
+  script:
+    - python3 setup.py test
+    - python3 -c 'from test import test_encoding as te; te.manual_test()'
+
 pages:
   before_script:
     - apt-get update && apt-get install -y gcc g++ make python-dev libpcap-dev
